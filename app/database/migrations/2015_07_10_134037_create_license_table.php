@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateLicenseTable extends Migration {
+
+	/**
+	 * Run the migrations.
+	 *
+	 * @return void
+	 */
+	public function up()
+	{
+		Schema::create('licenseType_user', function(Blueprint $table)
+		{
+			$table->integer('type_id')->unsigned()->index();
+			$table->foreign('type_id')->references('id')->on('license_types')->onDelete('cascade');
+
+			$table->integer('user_id')->unsigned()->index();
+			$table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+			
+			$table->timestamps();
+		});
+	}
+
+	/**
+	 * Reverse the migrations.
+	 *
+	 * @return void
+	 */
+	public function down()
+	{
+		Schema::table('licenseType_user', function(Blueprint $table)
+		{
+			//
+		});
+	}
+
+}
