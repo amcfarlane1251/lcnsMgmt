@@ -55,13 +55,11 @@ class LicensesController extends AdminController
         $depreciation_list = array('0' => Lang::get('admin/licenses/form.no_depreciation')) + Depreciation::lists('name', 'id');
         $maintained_list = array('' => 'Maintained', '1' => 'Yes', '0' => 'No');
         //define array of EC's
-        $ec = DB::table('roles')->lists('role', 'id');
+        $ec = Sentry::getUser()->filterRoles();
         //define array of license types
         $lcnsTypes = DB::table('license_types')->lists('name', 'id');
         return View::make('backend/licenses/edit')
             ->with('license_options',$license_options)
-            ->with('depreciation_list',$depreciation_list)
-            ->with('maintained_list',$maintained_list)
             ->with('license',new License)
             ->with('lcnsTypes',$lcnsTypes)
             ->with('ec',$ec);;
@@ -119,6 +117,7 @@ class LicensesController extends AdminController
             $license->expiration_date   = e(Input::get('expiration_date'));
             $license->user_id           = Sentry::getId();
             $license->type_id           = e(Input::get('type_id'));
+            $license->role_id           = e(Input::get('role_id'));
 
             if (($license->purchase_date == "") || ($license->purchase_date == "0000-00-00")) {
                 $license->purchase_date = NULL;
@@ -191,7 +190,7 @@ class LicensesController extends AdminController
         $license_options = array('' => 'Top Level') + DB::table('assets')->where('id', '!=', $licenseId)->lists('name', 'id');
         $depreciation_list = array('0' => Lang::get('admin/licenses/form.no_depreciation')) + Depreciation::lists('name', 'id');
         $maintained_list = array('' => 'Maintained', '1' => 'Yes', '0' => 'No');
-        $ec = DB::table('roles')->lists('role', 'id');
+        $ec = Sentry::getUser()->filterRoles();
         $lcnsTypes = DB::table('license_types')->lists('name', 'id');
         return View::make('backend/licenses/edit', compact('license'))
             ->with('license_options',$license_options)
@@ -884,9 +883,17 @@ class LicensesController extends AdminController
     public function getDatatable() {
         $licenses = License::orderBy('created_at', 'DESC')->get();
 
-        $actions = new \Chumper\Datatable\Columns\FunctionColumn('actions', function($licenses) {
-            return '<a href="'.route('update/license', $licenses->id).'" class="btn btn-warning btn-sm" style="margin-right:5px;"><i class="fa fa-pencil icon-white"></i></a><a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/license', $licenses->id).'" data-content="'.Lang::get('admin/licenses/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($licenses->name).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
-        });
+        //filter content by role
+        $user = Sentry::getUser();
+        $licenses = $user->filterByRole($licenses);
+        if(Sentry::getUser()->sysAdmin()){
+            $actions = new \Chumper\Datatable\Columns\FunctionColumn('actions', function($licenses) {
+                return '<a href="'.route('update/license', $licenses->id).'" class="btn btn-warning btn-sm" style="margin-right:5px;"><i class="fa fa-pencil icon-white"></i></a><a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/license', $licenses->id).'" data-content="'.Lang::get('admin/licenses/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($licenses->name).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
+            });
+        }
+        else{
+            $actions = new \Chumper\Datatable\Columns\FunctionColumn('actions', function($licenses) { });
+        }
 
         return Datatable::collection($licenses)
         ->addColumn('name', function($licenses) {

@@ -12,4 +12,5 @@ return array(
     'software_user'  	=> 'Software Checked out to :name',
     'view_user'  		=> 'View User :name',
     'usercsv'			=> 'CSV file',
+    'request'           => 'Request User',
     );

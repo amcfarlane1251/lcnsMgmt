@@ -27,6 +27,7 @@ return array(
     'phone'  				=> 'Phone',
     'show_current'          => 'Show Current Users',
     'show_deleted'          => 'Show Deleted Users',
+    'show_requests'         => 'Show Requested Users',
     'title' 				=> 'Rank',
     'updateuser' 			=> 'Update User',
     'username' 				=> 'Username',

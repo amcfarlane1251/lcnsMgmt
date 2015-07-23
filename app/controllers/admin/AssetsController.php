@@ -26,6 +26,7 @@ use Mail;
 use Datatable;
 use TCPDF;
 use Slack;
+use Role;
 
 class AssetsController extends AdminController
 {
@@ -67,7 +68,7 @@ class AssetsController extends AdminController
         $supplier_list = array('' => Lang::get('general.select_supplier')) + Supplier::orderBy('name', 'asc')->lists('name', 'id');
         $assigned_to = array('' => Lang::get('general.select_user')) + DB::table('users')->select(DB::raw('concat(first_name," ",last_name) as full_name, id'))->whereNull('deleted_at')->lists('full_name', 'id');
         $location_list = array('' => Lang::get('general.select_location')) + Location::orderBy('name', 'asc')->lists('name', 'id');
-
+        $ec = array('' => Lang::get('general.select_ec')) + Sentry::getUser()->filterRoles();
 
         // Grab the dropdown list of status
         $statuslabel_list = Statuslabel::orderBy('name', 'asc')->lists('name', 'id');
@@ -79,6 +80,7 @@ class AssetsController extends AdminController
         $view->with('assigned_to',$assigned_to);
         $view->with('location_list',$location_list);
         $view->with('asset',new Asset);
+        $view->with('ec', $ec);
 
         if (!is_null($model_id)) {
             $selected_model = Model::find($model_id);
@@ -218,11 +220,12 @@ class AssetsController extends AdminController
 		->lists('name', 'id');
         $supplier_list = array('' => Lang::get('general.select_supplier')) + Supplier::orderBy('name', 'asc')->lists('name', 'id');
         $location_list = array('' => Lang::get('general.select_location')) + Location::orderBy('name', 'asc')->lists('name', 'id');
+        $ec = array('' => Lang::get('general.select_ec')) + Sentry::getUser()->filterRoles();
 
         // Grab the dropdown list of status
         $statuslabel_list = Statuslabel::orderBy('name', 'asc')->lists('name', 'id');
 
-        return View::make('backend/hardware/edit', compact('asset'))->with('model_list',$model_list)->with('supplier_list',$supplier_list)->with('location_list',$location_list)->with('statuslabel_list',$statuslabel_list);
+        return View::make('backend/hardware/edit', compact('asset'))->with('model_list',$model_list)->with('supplier_list',$supplier_list)->with('location_list',$location_list)->with('statuslabel_list',$statuslabel_list)->with('ec', $ec);
     }
 
 
@@ -292,6 +295,13 @@ class AssetsController extends AdminController
                 $asset->rtd_location_id = 0;
             } else {
                 $asset->rtd_location_id     = e(Input::get('rtd_location_id'));
+            }
+
+            if( e(Input::get('role_id')) == ''){
+                $asset->role_id = NULL;
+            }
+            else{
+                $asset->role_id = e(Input::get('role_id'));
             }
 
             $checkModel = Config::get('app.url').'/api/models/'.e(Input::get('model_id')).'/check';
@@ -990,8 +1000,7 @@ class AssetsController extends AdminController
     public function getDatatable($status = null)
     {
 
-       $assets = Asset::with('model','assigneduser','assigneduser.userloc','assetstatus','defaultLoc','assetlog','model','model.category')->Hardware()->select(array('id', 'name','model_id','assigned_to','asset_tag','serial','status_id','purchase_date','deleted_at'));
-
+       $assets = Asset::with('model','assigneduser','assigneduser.userloc','assetstatus','defaultLoc','assetlog','model','model.category')->Hardware()->select(array('id', 'name','model_id','assigned_to','asset_tag','serial','status_id','purchase_date','deleted_at', 'role_id'));
 
 			switch ($status) {
 				case 'Pending':
@@ -1020,6 +1029,8 @@ class AssetsController extends AdminController
 
         $assets = $assets->orderBy('asset_tag', 'ASC')->get();
 
+        $user = Sentry::getUser();
+        $assets = $user->filterByRole($assets);
 
         $actions = new \Chumper\Datatable\Columns\FunctionColumn('actions', function ($assets)
         	{
@@ -1056,7 +1067,12 @@ class AssetsController extends AdminController
 		        return '<a title="'.$assets->asset_tag.'" href="hardware/'.$assets->id.'/view">'.$assets->asset_tag.'</a>';
 	        })
 
-        ->showColumns('serial')
+        ->addColumn('role',function($assets)
+        {
+            if($assets->role){
+                return $assets->role->role;
+            }
+        })
 
 		->addColumn('model',function($assets)
 			{

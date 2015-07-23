@@ -101,16 +101,6 @@
                 </div>
             </div>
 
-
-			<!-- Manager -->
-            <div class="form-group {{ $errors->has('manager_id') ? 'has-error' : '' }}">
-                <label class="col-md-3 control-label" for="manager_id">@lang('admin/users/table.manager')</label>
-                <div class="col-md-7">
-                    {{ Form::select('manager_id', $manager_list , Input::old('manager_id', $user->manager_id), array('class'=>'select2', 'style'=>'width:250px')) }}
-                    {{ $errors->first('manager_id', '<br><span class="alert-msg">:message</span>') }}
-                </div>
-            </div>
-
 			<!-- Location -->
             <div class="form-group {{ $errors->has('location_id') ? 'has-error' : '' }}">
                 <label class="col-md-3 control-label" for="location_id">@lang('admin/users/table.location')
@@ -130,7 +120,7 @@
                 </div>
             </div>
 
-            <!-- License Type -->
+            <!-- License Types -->
             <div class="form-group {{ $errors->has('lcnsTypes') ? 'has-error' : '' }}">
                 <label class="col-md-3 control-label" for="lcnsTypes">@lang('admin/users/table.lcnsTypes')</label>
                 <div class="col-md-5">
@@ -139,27 +129,28 @@
                     </div>
                 </div>
             </div>
-            <!--{{ Log::debug(print_R(Sentry::getUser(), true)) }}-->
+
             <!-- Activation Status -->
-            <div class="form-group {{ $errors->has('activated') ? 'has-error' : '' }}">
-                <label class="col-md-3 control-label" for="activated">@lang('admin/users/table.activated')</label>
-                <div class="col-md-7">
-                   <div class="controls">
-                    <select{{ ($user->id === Sentry::getId() ? ' disabled="disabled"' : '') }} name="activated" id="activated" {{ ((Config::get('app.lock_passwords') && ($user->id)) ? ' disabled' : '') }}>
-                    @if ($user->id)
-                        <option value="1"{{ ($user->isActivated() ? ' selected="selected"' : '') }}>@lang('general.yes')</option>
-                        <option value="0"{{ ( ! $user->isActivated() ? ' selected="selected"' : '') }}>@lang('general.no')</option>
-                    @else
-                        <option value="1"{{ (Input::old('activated') == 1 ? ' selected="selected"' : '') }}>@lang('general.yes')</option>
-                        <option value="0">@lang('general.no')</option>
-                    @endif
+            @if($adminRole)
+                <div class="form-group {{ $errors->has('activated') ? 'has-error' : '' }}">
+                    <label class="col-md-3 control-label" for="activated">@lang('admin/users/table.activated')</label>
+                    <div class="col-md-7">
+                       <div class="controls">
+                        <select{{ ($user->id === Sentry::getId() ? ' disabled="disabled"' : '') }} name="activated" id="activated" {{ ((Config::get('app.lock_passwords') && ($user->id)) ? ' disabled' : '') }}>
+                        @if ($user->id)
+                            <option value="1"{{ ($user->isActivated() ? ' selected="selected"' : '') }}>@lang('general.yes')</option>
+                            <option value="0"{{ ( ! $user->isActivated() ? ' selected="selected"' : '') }}>@lang('general.no')</option>
+                        @else
+                            <option value="1"{{ (Input::old('activated') == 1 ? ' selected="selected"' : '') }}>@lang('general.yes')</option>
+                            <option value="0">@lang('general.no')</option>
+                        @endif
 
-                    </select>
+                        </select>
 
-                    {{ $errors->first('activated', '<br><span class="alert-msg">:message</span>') }}
-                </div>
-                </div>
-            </div>
+                        {{ $errors->first('activated', '<br><span class="alert-msg">:message</span>') }}
+                    </div>
+                    </div>
+                </div>   
 
             <!-- Password -->
             <div class="form-group {{ $errors->has('password') ? 'has-error' : '' }}">
@@ -233,6 +224,7 @@
 				</div>
 			</div>
 			@endif
+        @endif
 
 
 

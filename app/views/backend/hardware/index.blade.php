@@ -59,7 +59,7 @@
 {{ Datatable::table()
     ->addColumn('<input type="checkbox" id="checkAll" style="padding-left: 0px;">',Lang::get('admin/hardware/form.name'), 
     	Lang::get('admin/hardware/table.asset_tag'), 
-    	Lang::get('admin/hardware/table.serial'),
+    	Lang::get('general.ec'),
 		Lang::get('admin/hardware/form.model'),
     	Lang::get('admin/hardware/table.status'),
 		Lang::get('admin/hardware/table.location'),

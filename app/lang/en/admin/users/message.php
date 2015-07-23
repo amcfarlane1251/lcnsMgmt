@@ -8,7 +8,8 @@ return array(
     'user_password_required'   	=> 'The password is required.',
     'insufficient_permissions' 	=> 'Insufficient Permissions.',
     'user_deleted_warning' 		=> 'This user has been deleted. You will have to restore this user to edit them or assign them new assets.',
-    'no_lms_lcn'               => 'There are no remaining available LMS licenses',
+    'no_lcn_dlnlms'             => 'There are no remaining available LMS licenses',
+    'no_lcn_sabapublisher'      => 'There are no remaining SABA Publisher licenses. Please remove this license from License Types to continue.',
 
 
     'success' => array(

@@ -235,6 +235,13 @@ class Asset extends Depreciable
 
     }
 
+    /**
+     * Get role information
+    */
+    public function role() {
+        return $this->belongsTo('Role', 'role_id');
+    }
+
 
 
 	/**

@@ -66,7 +66,7 @@ class User extends SentryUserModel
     /**
     * Get roles for this user
     **/
-    public function roles()
+    public function role()
     {
         return $this->belongsTo('Role', 'role_id');
     }
@@ -111,7 +111,7 @@ class User extends SentryUserModel
     }
     
     public function sentryThrottle() {	    
-	    return $this->hasOne('Throttle'); 
+	    return $this->hasOne('Throttle');
     }
     
     public function scopeGetDeleted($query)
@@ -121,8 +121,48 @@ class User extends SentryUserModel
 	
 	public function scopeGetNotDeleted($query)
 	{
-		return $query->whereNull('deleted_at');
+		return $query->where('activated', '=', 1);
 	}
 
+    public function scopeGetRequests($query)
+    {
+        return $query->where('activated', '=', 0);
+    }
+
+    public function filterByRole($content){
+        $role = $this->role->role;
+        if($role == "All"){
+            return $content;
+        }
+
+        foreach($content as $key => $value){
+            if($value->role){
+                if($role != $value->role->role){
+                    unset($content[$key]);
+                }
+            }
+        }
+        return $content;
+    }
+
+    public function filterRoles(){
+        if($this->role->role == 'All'){
+            $ec = Role::lists('role', 'id');
+        }
+        else{
+            $ec = Role::where('role', '<>', 'All')->lists('role', 'id');
+        }
+
+        return $ec;
+    }
+
+    public function sysAdmin(){
+        if ($this->role->role == 'All'){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 
 }

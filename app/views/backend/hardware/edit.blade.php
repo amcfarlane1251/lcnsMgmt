@@ -90,6 +90,15 @@
                 </div>
             </div>
 
+            <!-- EC -->
+            <div class="form-group {{ $errors->has('role_id') ? ' has-error' : '' }}">
+                <label for="role_id" class="col-md-2 control-label">@lang('general.ec')</label>
+                <div class="col-md-7">
+                    {{ Form::select('role_id', $ec, Input::old('role_id', $asset->role_id), array('class'=>'select2', 'style'=>'width:250px')) }}
+                    {{ $errors->first('role_id', '<br><span class="alert-msg">:message</span>') }}
+                </div> 
+            </div>
+
             <!-- MAC Address -->
             <div id="mac_address" class="form-group {{ $errors->has('mac_address') ? ' has-error' : '' }}" style="display:none;">
                 <label for="mac_address" class="col-md-2 control-label">@lang('admin/hardware/form.mac_address')</label>

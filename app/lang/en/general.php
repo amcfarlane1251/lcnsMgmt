@@ -103,6 +103,7 @@ return array(
     'select_supplier'		=> 'Select a Supplier',
     'select_user'			=> 'Select a User',
     'select_date'			=> 'Select Date',
+    'select_ec'             => 'Select an EC',
     'settings'				=> 'Settings',
     'sign_in'				=> 'Sign in',
     'site_name'				=> 'Site Name',

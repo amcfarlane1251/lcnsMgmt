@@ -59,7 +59,7 @@
             <div class="form-group {{ $errors->has('ec') ? 'has-error' : '' }}">
                 <label class="col-md-3 control-label" for="role_id">@lang('admin/users/table.ec')</label>
                 <div class="col-md-7">
-                    {{ Form::select('role_id', $ec, Input::old('role_id', $license->role()->first()->id), array('class'=>'select2', 'style'=>'width:250px')) }}
+                    {{ Form::select('role_id', $ec, Input::old('role_id', $license->role_id), array('class'=>'select2', 'style'=>'width:250px')) }}
                     {{ $errors->first('role_id', '<br><span class="alert-msg">:message</span>') }}
                 </div>
             </div>
@@ -72,24 +72,6 @@
                         {{ Form::select('type_id', $lcnsTypes, $license->licenseType()->lists('id'), array('class'=>'select2', 'style'=>'width:240px')) }}
                     </div>
                 </div>
-            </div>
-
-            <!-- Licensed to name -->
-            <div class="form-group {{ $errors->has('license_name') ? ' has-error' : '' }}">
-                <label for="license_name" class="col-md-3 control-label">@lang('admin/licenses/form.to_name')</label>
-                    <div class="col-md-7">
-                        <input class="form-control" type="text" name="license_name" id="license_name" value="{{ Input::old('license_name', $license->license_name) }}" />
-                        {{ $errors->first('license_name', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
-                    </div>
-            </div>
-
-            <!-- Licensed to email -->
-            <div class="form-group {{ $errors->has('license_email') ? ' has-error' : '' }}">
-                <label for="license_email" class="col-md-3 control-label">@lang('admin/licenses/form.to_email')</label>
-                    <div class="col-md-7">
-                        <input class="form-control" type="text" name="license_email" id="license_email" value="{{ Input::old('license_email', $license->license_email) }}" />
-                        {{ $errors->first('license_email', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
-                    </div>
             </div>
 
             <!-- Seats -->
@@ -110,15 +92,6 @@
                     {{ Form::Checkbox('reassignable', '1', Input::old('reassignable', $license->id ? $license->reassignable : '1')) }}
                     @lang('general.yes')
                 </div>
-            </div>
-
-            <!-- Order Number -->
-            <div class="form-group {{ $errors->has('order_number') ? ' has-error' : '' }}">
-                <label for="order_number" class="col-md-3 control-label">@lang('admin/licenses/form.order')</label>
-                    <div class="col-md-7">
-                        <input class="form-control" type="text" name="order_number" id="order_number" value="{{ Input::old('order_number', $license->order_number) }}" />
-                        {{ $errors->first('order_number', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
-                    </div>
             </div>
 
             <!-- Purchase Date -->
@@ -160,34 +133,6 @@
                     <input type="date" class="datepicker form-control" data-date-format="yyyy-mm-dd" placeholder="Select Date" name="expiration_date" id="expiration_date" value="{{ Input::old('expiration_date', $license->expiration_date) }}">
                     <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
                 {{ $errors->first('expiration_date', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
-                </div>
-            </div>
-
-            <!-- Depreciation -->
-            <div class="form-group {{ $errors->has('depreciation_id') ? ' has-error' : '' }}">
-                <label for="parent" class="col-md-3 control-label">@lang('admin/licenses/form.depreciation')</label>
-                    <div class="col-md-7">
-                        {{ Form::select('depreciation_id', $depreciation_list , Input::old('depreciation_id', $license->depreciation_id), array('class'=>'select2', 'style'=>'width:350px')) }}
-                        {{ $errors->first('depreciation_id', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
-                    </div>
-            </div>
-
-            <!-- Maintained -->
-            <div class="form-group {{ $errors->has('maintained') ? ' has-error' : '' }}">
-                <label for="maintained" class="col-md-3 control-label">@lang('admin/licenses/form.maintained')</label>
-                <div class="col-md-7 input-group">
-					{{ Form::Checkbox('maintained', '1', Input::old('maintained', $license->maintained)) }}
-					@lang('general.yes')
-                </div>
-            </div>
-
-            <!-- Purchase Date -->
-            <div class="form-group {{ $errors->has('termination_date') ? ' has-error' : '' }}">
-                <label for="termination_date" class="col-md-3 control-label">@lang('admin/licenses/form.termination_date')</label>
-                <div class="input-group col-md-2">
-                    <input type="date" class="datepicker form-control" data-date-format="yyyy-mm-dd" placeholder="Select Date" name="termination_date" id="termination_date" value="{{ Input::old('termination_date', $license->termination_date) }}">
-                    <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                    {{ $errors->first('termination_date', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') }}
                 </div>
             </div>
 

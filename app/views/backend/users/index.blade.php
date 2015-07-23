@@ -12,11 +12,16 @@
 <div class="row header">
     <div class="col-md-12">
 	    <a href="{{ route('import/user') }}" class="btn btn-default pull-right"><span class="fa fa-upload"></span> Import</a>
-        <a href="{{ route('create/user') }}" class="btn btn-success pull-right" style="margin-right: 5px;"><i class="fa fa-plus icon-white"></i>  @lang('general.create')</a>
-         @if (Input::get('status')=='deleted')
+        <a href="{{ route('create/user') }}" class="btn btn-success pull-right" style="margin-right: 5px;"><i class="fa fa-plus icon-white"></i>  
+        @if (Sentry::getUser()->sysAdmin())
+            @lang('general.create')</a>
+        @else
+            @lang('admin/users/general.request')</a>
+        @endif
+         @if (Input::get('status')=='requests')
             <a class="btn btn-default pull-right" href="{{ URL::to('admin/users') }}" style="margin-right: 5px;">@lang('admin/users/table.show_current')</a>
         @else
-            <a class="btn btn-default pull-right" href="{{ URL::to('admin/users?status=deleted') }}" style="margin-right: 5px;">@lang('admin/users/table.show_deleted')</a>
+            <a class="btn btn-default pull-right" href="{{ URL::to('admin/users?status=requests') }}" style="margin-right: 5px;">@lang('admin/users/table.show_requests')</a>
         @endif
 
         <h3>

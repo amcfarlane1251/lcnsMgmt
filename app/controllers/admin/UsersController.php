@@ -60,23 +60,24 @@ class UsersController extends AdminController
      */
     public function getCreate()
     {
-        // Get all the available groups
-        $groups = Sentry::getGroupProvider()->findAll();
-
-        // Selected groups
-        $userGroups = Input::old('groups', array());
+        $adminRole = Sentry::getUser()->sysAdmin();
+        if($adminRole){
+            // Get all the available groups
+            $groups = Sentry::getGroupProvider()->findAll();
+            // Selected groups
+            $userGroups = Input::old('groups', array());
+        }
+        else{
+            $groups = array();
+            $userGroups = array();
+        }
 
         // Get all the available permissions
         $permissions = Config::get('permissions');
         $this->encodeAllPermissions($permissions);
 
         //get all the environmental commands
-        if(Sentry::getUser()->roles['role'] == 'All'){
-            $ec = array('' => 'Select an EC') + Role::lists('role', 'id');
-        }
-        else{
-            $ec = array('' => 'Select an EC') + Role::lists('role', 'id')->where('role', '<>', 'All');
-        }
+        $ec = Sentry::getUser()->filterRoles();
 
         //define array of license types
         $lcnsTypes = DB::table('license_types')->lists('name', 'id');
@@ -105,7 +106,8 @@ class UsersController extends AdminController
         ->with('manager_list',$manager_list)
         ->with('user',new User)
         ->with('ec', $ec)
-        ->with('lcnsTypes', $lcnsTypes);
+        ->with('lcnsTypes', $lcnsTypes)
+        ->with('adminRole', $adminRole);
 
     }
 
@@ -116,6 +118,31 @@ class UsersController extends AdminController
      */
     public function postCreate()
     {
+        //check if sys admin
+        $adminRole = Sentry::getUser()->sysAdmin();
+
+        if(!$adminRole){
+
+            //default to Users group
+            try{
+                $userGroup = Sentry::getGroupProvider()->findByName('Users');
+            }
+            catch(Cartalyst\Sentry\Groups\GroupNotFoundException $e){
+                echo 'Group was not found';
+            }
+            $groups = array('0' => $userGroup->id);
+        }
+        else{
+            $groups = Input::get('groups');
+        }
+
+        //If no password is given, default to random string
+        if(!Input::has('password')){
+            $randStr = substr(md5(rand()), 0, 7);
+            Input::merge(array('password' => $randStr));
+            Input::merge(array('password_confirm' => $randStr));
+        }
+
         // Create a new validator instance from our validation rules
         $validator = Validator::make(Input::all(), $this->validationRules);
 		$permissions = Input::get('permissions', array());
@@ -132,13 +159,11 @@ class UsersController extends AdminController
             // We need to reverse the UI specific logic for our
             // permissions here before we create the user.
 
-            // Get the inputs, with some exceptions
-            $inputs = Input::except('csrf_token', 'password_confirm', 'groups','email_user');
-
-			// @TODO: Figure out WTF I need to do this.
-            if ($inputs['manager_id']=='') {
-            	unset($inputs['manager_id']);
+            if(!Input::get('activated')){
+                Input::merge(array('activated' => 0));
             }
+            // Get the inputs, with some exceptions
+            $inputs = Input::except('csrf_token', 'password_confirm', 'groups','email_user','lcnsTypes');
 
             if ($inputs['location_id']=='') {
             	unset($inputs['location_id']);
@@ -146,9 +171,8 @@ class UsersController extends AdminController
 
             // Was the user created?
             if ($user = Sentry::getUserProvider()->create($inputs)) {
-
                 // Assign the selected groups to this user
-                foreach (Input::get('groups', array()) as $groupId) {
+                foreach ($groups as $groupId) {
                     $group = Sentry::getGroupProvider()->findById($groupId);
                     $user->addGroup($group);
                 }
@@ -156,6 +180,44 @@ class UsersController extends AdminController
                 //add license types to user
                 foreach(Input::get('lcnsTypes', array()) as $type){
                     $user->licenseTypes()->attach($type);
+                }
+
+                //if user is activated, assign them to their license seat(s)
+                if(Input::get('activated') == 1)
+                {
+                    $toAdd = array(); //seats to add
+                    //get array of license types
+                    foreach($user->licenseTypes()->lists('name') as $lcnsName)
+                    {
+                        //get available seat for license
+                        $seat = DB::table('licenses')
+                            ->join('license_types', 'licenses.type_id', '=', 'license_types.id')
+                            ->join('license_seats', 'licenses.id', '=','license_seats.license_id')
+                            ->orwhere(function($query) use ($lcnsName, $user){
+                                $query
+                                    ->where('licenses.role_id', $user->role_id)
+                                    ->where('license_types.name', '=', $lcnsName)
+                                    ->whereNull('license_seats.assigned_to');
+                            })
+                            ->first();
+                        if($seat){
+                            $toAdd[] = $seat;
+                        }
+                        else{
+                            $messageKey = str_replace(' ', '', strtolower($lcnsName));
+                            $error = Lang::get('admin/users/message.no_lcn_'.$messageKey);
+                            // Redirect to the user creation page
+                            return Redirect::route('update/user', $user->id)->withInput()->with('error', $error);
+                        }
+                    }
+
+                    if(count($toAdd)){
+                        foreach($toAdd as $seat){
+                            DB::table('license_seats')
+                                ->where('id', $seat->id)
+                                ->update(array('assigned_to' => $user->id));
+                        }
+                    }
                 }
 
                 // Prepare the success message
@@ -178,29 +240,12 @@ class UsersController extends AdminController
 		            });
 				}
 
-                if(Input::get('activated')){
-                    //get first available SABA LMS licenses
-                    $sabaLcn = DB::table('licenses')
-                        ->join('suppliers', 'licenses.supplier_id', '=', 'suppliers.id')
-                        ->join('license_seats', 'licenses.id', '=','license_seats.license_id')
-                        ->orwhere(function($query){
-                            $query
-                                ->where('suppliers.name', '=', 'Saba LMS')
-                                ->whereNull('license_seats.assigned_to');
-                        })
-                        ->first();
-                    if($sabaLcn){
-                        DB::table('license_seats')
-                            ->where('id', '=', $sabaLcn->id)
-                            ->update(array('assigned_to' => $user->id));
-                    }
-                    else{
-                        $error = Lang::get('admin/users/message.no_lms_lcn');
-                        // Redirect to the user creation page
-                        return Redirect::route('create/user')->withInput()->with('error', $error);
-                    }
+                //get the selected license types
+                $selectedTypes = Input::get('lcnsTypes', array());
+                //add types to user
+                foreach($selectedTypes as $type){
+                    $user->licenseTypes()->attach($type);
                 }
-
 
                 return Redirect::route('users')->with('success', $success);
             }
@@ -260,7 +305,7 @@ class UsersController extends AdminController
             ->lists('full_name', 'id');
 
             //get all the environmental commands
-            $ec = array('' => 'Select an EC') + Role::lists('role', 'id');
+            $ec = Sentry::getUser()->filterRoles();
 
             //define array of license types
             $lcnsTypes = DB::table('license_types')->lists('name', 'id');
@@ -272,13 +317,13 @@ class UsersController extends AdminController
             // Redirect to the user management page
             return Redirect::route('users')->with('error', $error);
         }
-
         // Show the page
         return View::make('backend/users/edit', compact('user', 'groups', 'userGroups', 'permissions', 'userPermissions'))
         ->with('location_list',$location_list)
         ->with('manager_list',$manager_list)
         ->with('ec', $ec)
-        ->with('lcnsTypes', $lcnsTypes);
+        ->with('lcnsTypes', $lcnsTypes)
+        ->with('adminRole', Sentry::getUser()->sysAdmin());
     }
 
     /**
@@ -332,7 +377,12 @@ class UsersController extends AdminController
 			$user->email       		= Input::get('email');
 		}
 
+        if(!Input::get('activated')){
+                Input::merge(array('activated' => 0));
+        }
+
         try {
+            $prevActivated = $user->activated;
             // Update the user
             $user->first_name  		= Input::get('first_name');
             $user->last_name   		= Input::get('last_name');
@@ -404,6 +454,40 @@ class UsersController extends AdminController
             //remove types from user
             foreach($typesToRemove as $type){
                 $user->licenseTypes()->detach($type);
+            }
+            if(Input::get('activated') && $prevActivated == 0){
+                //if activating a requested user, assign them their licenses
+                $toAdd = array();
+
+                //check if user already has their licenses
+                
+                foreach($user->licenseTypes()->lists('name') as $licenseType){
+                    //get available license and assign it to user
+                     $lcns = DB::table('licenses')
+                            ->join('license_types', 'licenses.type_id', '=', 'license_types.id')
+                            ->join('license_seats', 'licenses.id', '=','license_seats.license_id')
+                            ->orwhere(function($query) use ($licenseType){
+                                $query
+                                    ->where('license_types.name', '=', $licenseType)
+                                    ->whereNull('license_seats.assigned_to');
+                            })
+                            ->first();
+                    if($lcns){
+                        $toAdd[] = $lcns;
+                    }
+                    else{
+                        $messageKey = str_replace(' ', '', strtolower($licenseType));
+                        $error = Lang::get('admin/users/message.no_lcn_'.$messageKey);
+                        // Redirect to the user creation page
+                        return Redirect::route('update/user', $id)->withInput()->with('error', $error);
+                    }
+
+                }
+                foreach($toAdd as $lcns){
+                    DB::table('license_seats')
+                            ->where('id', '=', $lcns->id)
+                            ->update(array('assigned_to' => $user->id));
+                }
             }
 
             // Was the user updated?
@@ -756,10 +840,10 @@ class UsersController extends AdminController
 	public function getDatatable($status = null)
     {
 
-	$users = User::with('assets','licenses','roles','sentryThrottle');
+	$users = User::with('assets','licenses','role','sentryThrottle');
 	switch ($status) {
-		case 'deleted':
-			$users->GetDeleted();
+		case 'requests':
+			$users->GetRequests();
 			break;
 		case '':
 			$users->GetNotDeleted();
@@ -767,15 +851,9 @@ class UsersController extends AdminController
 	}
 	$users = $users->orderBy('created_at', 'DESC')->get();
     
-    $userRole = Sentry::getUser()->roles['role'];
-    if($userRole != 'All'){
-        //filter users according to logged in users EC
-        foreach($users as $key => $user){
-            if($user->roles['role'] != $userRole){
-                unset($users[$key]);
-            }
-        }
-    }
+    //filter users by EC
+    $user = Sentry::getUser();
+    $users = $user->filterByRole($users);
 
     $actions = new \Chumper\Datatable\Columns\FunctionColumn('actions', function ($users)
         	{
@@ -815,8 +893,8 @@ class UsersController extends AdminController
 
 	     ->addColumn('role',function($users)
 	        {
-		        if ($users->roles) {
-		       	 return '<a title="'.$users->roles->role.'" href="users/'.$users->roles->id.'/view">'.$users->roles->role.'</a>';
+		        if ($users->role) {
+		       	 return '<a title="'.$users->role->role.'" href="users/'.$users->role->id.'/view">'.$users->role->role.'</a>';
 		       	}
 	        })
 
@@ -840,9 +918,4 @@ class UsersController extends AdminController
         ->make();
 
 		}
-
-
-
-
-
 }
