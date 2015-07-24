@@ -24,6 +24,7 @@ use View;
 use Datatable;
 use League\Csv\Reader;
 use Mail;
+use License;
 
 class UsersController extends AdminController
 {
@@ -455,23 +456,34 @@ class UsersController extends AdminController
             foreach($typesToRemove as $type){
                 $user->licenseTypes()->detach($type);
             }
-            if(Input::get('activated') && $prevActivated == 0){
-                //if activating a requested user, assign them their licenses
+
+            //if activating a user, assign them their licenses
+            if(Input::get('activated')){
+
+                //get list of current licenses assigned to user
+                $currentLcns = DB::table('licenses')
+                    ->join('license_seats', function($join) use ($id)
+                        {
+                            $join->on('licenses.id', '=', 'license_seats.license_id')
+                                ->where('license_seats.assigned_to','=', $id);
+                        })->lists('type_id');
+
+                //get the licenses to add
+                $lcnsTypeAdd = array_diff($selectedTypes, $currentLcns);
                 $toAdd = array();
 
-                //check if user already has their licenses
-                
-                foreach($user->licenseTypes()->lists('name') as $licenseType){
-                    //get available license and assign it to user
+                foreach($lcnsTypeAdd as $licenseTypeId){
+                    //get available licenses
                      $lcns = DB::table('licenses')
-                            ->join('license_types', 'licenses.type_id', '=', 'license_types.id')
-                            ->join('license_seats', 'licenses.id', '=','license_seats.license_id')
-                            ->orwhere(function($query) use ($licenseType){
-                                $query
-                                    ->where('license_types.name', '=', $licenseType)
-                                    ->whereNull('license_seats.assigned_to');
-                            })
-                            ->first();
+                        ->join('license_types', 'licenses.type_id', '=', 'license_types.id')
+                        ->join('license_seats', 'licenses.id', '=','license_seats.license_id')
+                        ->orwhere(function($query) use ($licenseTypeId, $user){
+                            $query
+                                ->where('licenses.role_id', $user->role_id)
+                                ->where('licenses.type_id', '=', $licenseTypeId)
+                                ->whereNull('license_seats.assigned_to');
+                        })
+                        ->first();
                     if($lcns){
                         $toAdd[] = $lcns;
                     }
@@ -483,11 +495,35 @@ class UsersController extends AdminController
                     }
 
                 }
-                foreach($toAdd as $lcns){
+                $license = new License();
+                //add the licenses
+                foreach($toAdd as $key => $lcns){
                     DB::table('license_seats')
                             ->where('id', '=', $lcns->id)
                             ->update(array('assigned_to' => $user->id));
                 }
+
+                //remove the licenses
+                $lcnsTypeRemove = array_diff($currentLcns, $selectedTypes);
+
+                foreach($lcnsTypeRemove as $licenseTypeId){
+                    $lcns = DB::table('licenses')
+                        ->join('license_types', 'licenses.type_id', '=', 'license_types.id')
+                        ->join('license_seats', 'licenses.id', '=','license_seats.license_id')
+                        ->orwhere(function($query) use ($licenseTypeId, $user){
+                            $query
+                                ->where('licenses.type_id', '=', $licenseTypeId)
+                                ->where('license_seats.assigned_to', $user->id);
+                        })
+                        ->first();
+                    try{
+                        $license->checkIn($lcns->id);
+                    }
+                    catch (Exception $e) {
+                        echo 'Caught exception: ',  $e->getMessage(), "\n";
+                    }
+                }
+                
             }
 
             // Was the user updated?

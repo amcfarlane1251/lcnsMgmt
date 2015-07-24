@@ -168,4 +168,10 @@ class License extends Depreciable
     {
         return $this->belongsTo('Supplier','supplier_id');
     }
+
+    public function checkIn($seatId){
+        DB::table('license_seats')
+            ->where('id', '=', $seatId)
+            ->update(array('assigned_to' => NULL));
+    }
 }

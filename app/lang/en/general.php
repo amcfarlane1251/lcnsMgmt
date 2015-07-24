@@ -92,6 +92,7 @@ return array(
     'ready_to_deploy'		=> 'Ready to Deploy',
     'recent_activity'		=> 'Recent Activity',
     'reports'				=> 'Reports',
+    'request'               => 'Request',
     'roles'                 => 'Roles',
     'save'  				=> 'Save',
     'select'				=> 'Select',

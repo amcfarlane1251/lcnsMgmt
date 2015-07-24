@@ -120,7 +120,20 @@ Route::group(array('prefix' => 'hardware', 'namespace' => 'Controllers\Admin', '
 
 
 });
+/*
+|------------------
+| Requestor Routes
+|------------------
+|
+| Register all the requestor routes
+|
+*/
 
+Route::group(array('prefix' => 'request', 'before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
+    Route::get('/', array('as' => 'request', 'uses' => 'RequestsController@licenseReq'));
+});
+
+//Route::resource('request.license');
 
 /*
 |--------------------------------------------------------------------------

@@ -247,6 +247,23 @@
     <!-- sidebar -->
     <div id="sidebar-nav">
         <ul id="dashboard-menu">
+
+            @if(Sentry::getUser()->hasAccess('request'))
+                <li{{ (Request::is('request*') ? 'class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>': '>')}}
+                    <a href="{{ URL::to('request?type=license') }}" class="dropdown-toggle">
+                        <span>@lang('general.request')</span>
+                        <b class="fa fa-chevron-down"></b>
+                    </a>
+
+                    <ul class="submenu{{ (Request::is('request*') ? ' active' : '') }}">
+                        <li>
+                            <a href="{{ route('request') }}" {{{ (Request::is('request/license') ? 'class="active"': '') }}}>@lang('general.license')</a>
+                        </li>
+                    </ul>
+
+                </li>
+            @endif
+
 			@if(Sentry::getUser()->hasAccess('admin'))
 			<li{{ (Request::is('*/') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ URL::to('/'); }}"><i class="fa fa-dashboard"></i><span>Dashboard</span></a>
