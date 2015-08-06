@@ -27,9 +27,15 @@ use Datatable;
 use TCPDF;
 use Slack;
 use Role;
+use Illuminate\Http\Request;
 
 class AssetsController extends AdminController
 {
+
+    public function __construct(Request $request){
+        $this->request = $request;        
+    }
+
     protected $qrCodeDimensions = array( 'height' => 3.5, 'width' => 3.5);
 
     /**
@@ -43,7 +49,39 @@ class AssetsController extends AdminController
         return View::make('backend/hardware/index');
     }
 
+    /**
+     * Show a list of all the assets, filtered by Environmental Command.
+     *
+     * @param string $ec
+     *
+     * @return View
+     */
 
+    public function getIndexByEc($ecId)
+    {
+        if ($this->request->ajax()){
+            $assets = Asset::where('role_id', $_GET['roleId'])->get();
+            foreach($assets as $key => $asset){
+                $assets[$key]->role = $asset->roles->role;
+                $assets[$key]->status = $asset->assetstatus->name;
+                ($assets[$key]->rtd_location_id ? $assets[$key]->location = $asset->defaultLoc->name : $assets[$key]->location = '');
+                if (($assets[$key]->assigned_to !='') && ($assets[$key]->assigned_to > 0)) {
+                    $assets[$key]->inOut = '<a href="'.route('checkin/hardware', $assets[$key]->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
+                } else {
+                    $assets[$key]->inOut = '<a href="'.route('checkout/hardware', $assets[$key]->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
+                }
+                if ($assets[$key]->deleted_at=='') {
+                    $assets[$key]->actions = '<a href="'.route('update/hardware', $assets[$key]->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a>';
+                    if(Sentry::getUser()->hasAccess('admin')){ $assets[$key]->actions .= ' <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $assets[$key]->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($assets[$key]->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';}
+                }
+            }
+            header('Content-Type: application/json');
+            echo json_encode($assets);
+        }
+        else{
+            return View::make('backend/hardware/listing');
+        }
+    }
 
     /**
      * Asset create.
@@ -999,7 +1037,6 @@ class AssetsController extends AdminController
 
     public function getDatatable($status = null)
     {
-
        $assets = Asset::with('model','assigneduser','assigneduser.userloc','assetstatus','defaultLoc','assetlog','model','model.category')->Hardware()->select(array('id', 'name','model_id','assigned_to','asset_tag','serial','status_id','purchase_date','deleted_at', 'role_id'));
 
 			switch ($status) {
@@ -1121,5 +1158,5 @@ class AssetsController extends AdminController
         ->orderColumns('name', 'asset_tag', 'serial', 'model', 'status','location','eol','checkout_date', 'inout')
         ->make();
 
-		}
+	}
 }

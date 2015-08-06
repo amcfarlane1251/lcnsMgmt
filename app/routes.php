@@ -78,6 +78,7 @@ Route::group(array('prefix' => 'hardware', 'namespace' => 'Controllers\Admin', '
     	'uses' => 'AssetsController@getEdit')
     );
 
+
     Route::get('{assetId}/clone', array('as' => 'clone/hardware', 'uses' => 'AssetsController@getClone'));
     Route::post('{assetId}/clone', 'AssetsController@postCreate');
     Route::get('{assetId}/delete', array('as' => 'delete/hardware', 'uses' => 'AssetsController@getDelete'));
@@ -129,11 +130,19 @@ Route::group(array('prefix' => 'hardware', 'namespace' => 'Controllers\Admin', '
 |
 */
 
-Route::group(array('prefix' => 'request', 'before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
-    Route::get('/', array('as' => 'request', 'uses' => 'RequestsController@licenseReq'));
+Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
+    Route::get('request/{id}/approve', 'RequestsController@edit');
+    Route::post('request/{id}/approve', 'RequestsController@approve');
+    Route::resource('request', 'RequestsController');
 });
 
-//Route::resource('request.license');
+Route::post('request/{id}/approve', array('uses' => 'Controllers\RequestsController@approve', 'before' => 'admin-auth'));
+
+Route::get('hardware/ec/{id}', array(
+        'before' => 'requestor-auth',
+        'uses' => 'Controllers\Admin\AssetsController@getIndexByEc'
+        )
+);
 
 /*
 |--------------------------------------------------------------------------
@@ -306,9 +315,6 @@ Route::group(array('prefix' => 'admin', 'before' => 'admin-auth', 'namespace' =>
         Route::get('{groupId}/view', array('as' => 'view/group', 'uses' => 'GroupsController@getView'));
     });
 
-    # Dashboard
-    Route::get('/', array('as' => 'admin', 'uses' => 'DashboardController@getIndex'));
-
 });
 
 /*
@@ -415,7 +421,7 @@ Route::group(array('before' => 'reporting-auth', 'namespace' => 'Controllers\Adm
 
 
 
-Route::get('/', array('as' => 'home', 'before' => 'admin-auth', 'uses' => 'Controllers\Admin\DashboardController@getIndex'));
+Route::get('/', array('as' => 'home', 'before' => 'requestor-auth', 'uses' => 'Controllers\Admin\DashboardController@getIndex'));
 
 
 

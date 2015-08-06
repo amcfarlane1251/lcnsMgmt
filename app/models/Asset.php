@@ -170,7 +170,6 @@ class Asset extends Depreciable
     		return $this->hasMany('LicenseSeat', 'asset_id');
     }
 
-
     public function supplier()
     {
         return $this->belongsTo('Supplier','supplier_id');
@@ -238,7 +237,7 @@ class Asset extends Depreciable
     /**
      * Get role information
     */
-    public function role() {
+    public function roles() {
         return $this->belongsTo('Role', 'role_id');
     }
 

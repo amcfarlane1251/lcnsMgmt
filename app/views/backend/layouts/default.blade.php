@@ -249,15 +249,23 @@
         <ul id="dashboard-menu">
 
             @if(Sentry::getUser()->hasAccess('request'))
-                <li{{ (Request::is('request*') ? 'class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>': '>')}}
-                    <a href="{{ URL::to('request?type=license') }}" class="dropdown-toggle">
+                <li {{ (Request::segment(1) == 'request' ? 'class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>': '>')}}
+                    <a href="{{ URL::to('request*') }}" class="dropdown-toggle">
+                    <i class="fa fa-laptop"></i>
                         <span>@lang('general.request')</span>
                         <b class="fa fa-chevron-down"></b>
                     </a>
 
                     <ul class="submenu{{ (Request::is('request*') ? ' active' : '') }}">
-                        <li>
-                            <a href="{{ route('request') }}" {{{ (Request::is('request/license') ? 'class="active"': '') }}}>@lang('general.license')</a>
+                        <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
+                            <a href="{{ URL::to('request/create') }}">@lang('request.requestLicense')</a>
+                        </li>
+
+                        <li class="divider">&nbsp;</li>
+                        <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
+                            <a href="{{ URL::to('request') }}">
+                                @lang('request.viewAll')
+                            </a>
                         </li>
                     </ul>
 
@@ -268,6 +276,7 @@
 			<li{{ (Request::is('*/') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ URL::to('/'); }}"><i class="fa fa-dashboard"></i><span>Dashboard</span></a>
             </li>
+            @endif
             <li{{ (Request::is('hardware*') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ URL::to('hardware') }}" class="dropdown-toggle">
                     <i class="fa fa-barcode"></i>
@@ -276,6 +285,7 @@
                 </a>
 
                 <ul class="submenu{{ (Request::is('hardware*') ? ' active' : '') }}">
+                    @if(Sentry::getUser()->hasAccess('admin'))
                     <li><a href="{{ URL::to('hardware?status=Deployed') }}" {{{ (Request::query('Deployed') ? ' class="active"' : '') }}} >@lang('general.deployed')</a></li>
                     <li><a href="{{ URL::to('hardware?status=RTD') }}" {{{ (Request::query('RTD') ? ' class="active"' : '') }}} >@lang('general.ready_to_deploy')</a></li>
                     <li><a href="{{ URL::to('hardware?status=Pending') }}" {{{ (Request::query('Pending') ? ' class="active"' : '') }}} >@lang('general.pending')</a></li>
@@ -290,8 +300,15 @@
                     <li><a href="{{ URL::to('admin/settings/categories') }}" {{{ (Request::is('admin/settings/categories*') ? ' class="active"' : '') }}} >@lang('general.categories')</a></li>
                     <li><a href="{{ URL::to('hardware?status=Deleted') }}" {{{ (Request::query('Deleted') ? ' class="active"' : '') }}} >@lang('general.deleted')</a></li>
 
+                    <li class="divider">&nbsp;</li>
+                    @endif
+                    <li>
+                        <a href="{{ URL::to('hardware/ec/'.Sentry::getUser()->role->id) }}">All Assets</a>
+                    </li>
+
                 </ul>
             </li>
+            @if(Sentry::getUser()->hasAccess('admin'))
             <li{{ (Request::is('admin/accessories*') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ URL::to('admin/accessories') }}">
                     <i class="fa fa-keyboard-o"></i>
@@ -333,13 +350,8 @@
                 </ul>
             </li>
              @endif
-             @if(!Sentry::getUser()->hasAccess('admin'))
-              <li{{ (Request::is('account/requestable-assets') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                <a href="{{ route('requestable-assets') }}">
-                    <i class="fa fa-laptop"></i>
-                    <span>@lang('admin/hardware/general.requestable')</span>
-                </a>
-            </li>
+             @if(Sentry::getUser()->hasAccess('admin') || Sentry::getUser()->hasAccess('request'))
+              
             @endif
 
 

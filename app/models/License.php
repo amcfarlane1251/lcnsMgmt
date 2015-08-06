@@ -174,4 +174,10 @@ class License extends Depreciable
             ->where('id', '=', $seatId)
             ->update(array('assigned_to' => NULL));
     }
+
+    public static function checkOutToAsset($seatId, $assetId){
+        DB::table('license_seats')
+            ->where('id', '=', $seatId)
+            ->update(array('asset_id' => $assetId));
+    }
 }

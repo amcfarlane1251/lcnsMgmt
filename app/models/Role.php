@@ -12,4 +12,8 @@ class Role extends Elegant
 	public function licenses(){
 		return $this->hasMany('License', 'role_id', 'id');
 	}
+
+	public static function getRoleById($id){
+		return Role::where('id', $id)->lists('id');
+	}
 }
