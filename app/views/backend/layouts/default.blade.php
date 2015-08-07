@@ -113,7 +113,7 @@
 	            	<img src="/uploads/{{{ Setting::getSettings()->logo }}}">
 	            	</a>
 	            @else
-	            	<a class="navbar-brand" href="{{ Config::get('app.url') }}">
+	            	<a class="navbar-brand" href="{{ URL::to('/') }}">
 	            	{{{ Setting::getSettings()->site_name }}}
 	            	</a>
 	            @endif
@@ -249,6 +249,9 @@
         <ul id="dashboard-menu">
 
             @if(Sentry::getUser()->hasAccess('request'))
+                <li{{ (Request::is('*/') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
+                    <a href="{{ URL::to('/'); }}"><i class="fa fa-dashboard"></i><span>Dashboard</span></a>
+                </li>
                 <li {{ (Request::segment(1) == 'request' ? 'class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>': '>')}}
                     <a href="{{ URL::to('request*') }}" class="dropdown-toggle">
                     <i class="fa fa-laptop"></i>
@@ -272,11 +275,6 @@
                 </li>
             @endif
 
-			@if(Sentry::getUser()->hasAccess('admin'))
-			<li{{ (Request::is('*/') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                <a href="{{ URL::to('/'); }}"><i class="fa fa-dashboard"></i><span>Dashboard</span></a>
-            </li>
-            @endif
             <li{{ (Request::is('hardware*') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                 <a href="{{ URL::to('hardware') }}" class="dropdown-toggle">
                     <i class="fa fa-barcode"></i>

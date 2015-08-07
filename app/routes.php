@@ -421,7 +421,7 @@ Route::group(array('before' => 'reporting-auth', 'namespace' => 'Controllers\Adm
 
 
 
-Route::get('/', array('as' => 'home', 'before' => 'requestor-auth', 'uses' => 'Controllers\Admin\DashboardController@getIndex'));
+Route::get('/', array('as' => 'home', 'before' => 'requestor-auth', 'uses' => 'Controllers\DashboardController@dashboardRouter'));
 
 
 

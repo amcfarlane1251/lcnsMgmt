@@ -180,4 +180,59 @@ class License extends Depreciable
             ->where('id', '=', $seatId)
             ->update(array('asset_id' => $assetId));
     }
+
+    public function countTotalByType($typeId, $roleId = null){
+        return DB::table('licenses')
+            ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
+            ->orwhere(function($query) use ($typeId, $roleId){
+                $query->where('licenses.type_id', $typeId)
+                      ->where('licenses.role_id', $roleId);
+            })->count();
+    }
+
+    public function countUsedByType($typeId, $roleId = null){
+        return DB::table('licenses')
+            ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
+            ->orwhere(function($query) use ($typeId, $roleId){
+                $query->where('licenses.type_id', $typeId)
+                      ->where('licenses.role_id', $roleId)
+                      ->whereNotNull('license_seats.assigned_to');
+            })->count();
+    }
+
+    public function countRemainingByType($typeId, $roleId = null){
+        return DB::table('licenses')
+            ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
+            ->orwhere(function($query) use ($typeId, $roleId){
+                $query->where('licenses.type_id', $typeId)
+                      ->where('licenses.role_id', $roleId)
+                      ->whereNull('license_seats.assigned_to');
+            })->count();
+    }
+
+    public function countTotalByRole($roleId){
+        return DB::table('licenses')
+            ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
+            ->orwhere(function($query) use ($roleId){
+                $query->where('licenses.role_id', $roleId);
+            })->count();
+    }
+
+    public function countUsedByRole($roleId){
+        return DB::table('licenses')
+            ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
+            ->orwhere(function($query) use ($roleId){
+                $query->where('licenses.role_id', $roleId)
+                ->whereNotNull('license_seats.assigned_to');
+            })->count();
+    }
+
+    public function countRemainingByRole($roleId){
+        return DB::table('licenses')
+            ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
+            ->orwhere(function($query) use ($roleId){
+                $query->where('licenses.role_id', $roleId)
+                ->whereNull('license_seats.assigned_to');
+            })->count();
+    }
 }

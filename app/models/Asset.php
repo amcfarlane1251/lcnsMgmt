@@ -167,7 +167,11 @@ class Asset extends Depreciable
 
     public function licenseseats()
     {
-    		return $this->hasMany('LicenseSeat', 'asset_id');
+    	return $this->hasMany('LicenseSeat', 'asset_id');
+    }
+
+    public function licenseSeatsCount(){
+        return $this->hasMany('LicenseSeat', 'asset_id')->count();
     }
 
     public function supplier()

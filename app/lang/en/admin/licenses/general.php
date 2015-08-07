@@ -1,7 +1,7 @@
 <?php
 
 return array(
-
+    'percentAlloc'              => 'Percentage Allocated by Type',
     'checkin'  					=> 'Checkin License Seat',
     'checkout_history'  		=> 'Checkout History',
     'checkout'  				=> 'Checkout License Seat',
