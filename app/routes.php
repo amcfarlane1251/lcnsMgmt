@@ -387,10 +387,6 @@ Route::group(array('prefix' => 'account', 'before' => 'auth', 'namespace' => 'Co
     Route::get('requestable-assets', array('as' => 'requestable-assets', 'uses' => 'ViewAssetsController@getRequestableIndex'));
     Route::get('request-asset/{assetId}', array('as' => 'account/request-asset', 'uses' => 'ViewAssetsController@getRequestAsset'));
 
-    # Account Dashboard
-    Route::get('/', array('as' => 'account', 'uses' => 'DashboardController@getIndex'));
-
-
 });
 
 /*
@@ -423,5 +419,6 @@ Route::group(array('before' => 'reporting-auth', 'namespace' => 'Controllers\Adm
 
 Route::get('/', array('as' => 'home', 'before' => 'requestor-auth', 'uses' => 'Controllers\DashboardController@dashboardRouter'));
 
+Route::get('dashboard/{ec}', array('as' => 'account', 'before' => 'admin-auth', 'uses' => 'Controllers\DashboardController@getIndex'));
 
 

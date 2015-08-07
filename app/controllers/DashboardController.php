@@ -14,8 +14,10 @@ class DashboardController extends \BaseController
 
     public function dashboardRouter(){
         $user = Sentry::getUser();
+        $ec = $user->filterRoles();
+        error_log(print_R($ec,true));
         if ($user->hasAccess('admin')){
-            return $this->getAdminIndex();
+            return View::make('backend/adminDashboard')->with('ec',$ec);
         }
         else{
             return $this->getIndex();
@@ -26,30 +28,31 @@ class DashboardController extends \BaseController
      *
      * @return View
      */
-    public function getIndex()
+    public function getIndex($roleId = null)
     {
         $user = Sentry::getUser();
+        (is_null($roleId) ? $roleId = $user->role_id : '');
         // get license info
         $licenseObj = new License();
         $lcnsTypes = LicenseType::lists('name', 'id');
         $licenses = array();
         //get the total amount of licenses
-        $totalAlloc = $licenseObj->countTotalByRole($user->role_id);
-        $totalUsed = $licenseObj->countUsedByRole($user->role_id);
-        $totalRemaining = $licenseObj->countRemainingByRole($user->role_id);
-
+        $totalAlloc = $licenseObj->countTotalByRole($roleId);
+        $totalUsed = $licenseObj->countUsedByRole($roleId);
+        $totalRemaining = $licenseObj->countRemainingByRole($roleId);
         //get asset info
         $allAssets = DB::table('models')
                     ->join('assets', 'assets.model_id', '=','models.id')
-                    ->orwhere(function ($query) use ($user) {
-                        $query->where('assets.role_id', $user->role_id);
+                    ->orwhere(function ($query) use ($roleId) {
+                        $query->where('assets.role_id', $roleId);
                     })->get();
         $assets = array();
 
+        //populate licenses array
         foreach($lcnsTypes as $key => $type){
-            $allocated = $licenseObj->countTotalByType($key, $user->role_id);
-            $used = $licenseObj->countUsedByType($key, $user->role_id);
-            $remaining = $licenseObj->countRemainingByType($key, $user->role_id);
+            $allocated = $licenseObj->countTotalByType($key, $roleId);
+            $used = $licenseObj->countUsedByType($key, $roleId);
+            $remaining = $licenseObj->countRemainingByType($key, $roleId);
 
             $licenses[$key] = new \stdClass();
             $licenses[$key]->name = $type;
@@ -65,6 +68,7 @@ class DashboardController extends \BaseController
 
         }
 
+        //populate assets array
         foreach($allAssets as $key => $asset){
             $modelObj = Asset::find($asset->id);
             if($modelObj->assigneduser){
