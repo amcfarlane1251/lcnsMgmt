@@ -11,6 +11,8 @@ return array(
 	'approveLicense' => 'Approve License',
 	'open' => 'Open Requests',
 	'closed' => 'Closed Requests',
+	'details' => 'Details',
+	'requestedLcns' => 'Requested License(s)',
 
 
 	'message.success.create' => 'Your request has been submitted',

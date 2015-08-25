@@ -31,15 +31,19 @@ class DashboardController extends \BaseController
     public function getIndex($roleId = null)
     {
         $user = Sentry::getUser();
+
         (is_null($roleId) ? $roleId = $user->role_id : '');
+
         // get license info
         $licenseObj = new License();
         $lcnsTypes = LicenseType::lists('name', 'id');
         $licenses = array();
+
         //get the total amount of licenses
         $totalAlloc = $licenseObj->countTotalByRole($roleId);
         $totalUsed = $licenseObj->countUsedByRole($roleId);
         $totalRemaining = $licenseObj->countRemainingByRole($roleId);
+
         //get asset info
         $allAssets = DB::table('models')
                     ->join('assets', 'assets.model_id', '=','models.id')
@@ -61,8 +65,10 @@ class DashboardController extends \BaseController
             $licenses[$key]->remaining = $remaining;
 
             //get percentages for chart
+            if($totalAlloc == 0){$percentAlloc = 25;}else{$percentAlloc = ($licenses[$key]->allocated / $totalAlloc) * 100;}
+
             $data = array(
-                'allocated' => ($licenses[$key]->allocated / $totalAlloc) * 100
+                'allocated' => $percentAlloc
             );
             $licenses[$key]->percentages = new \ArrayObject($data);
 

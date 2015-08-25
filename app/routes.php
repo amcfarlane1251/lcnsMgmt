@@ -133,10 +133,16 @@ Route::group(array('prefix' => 'hardware', 'namespace' => 'Controllers\Admin', '
 Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
     Route::get('request/{id}/approve', 'RequestsController@edit');
     Route::post('request/{id}/approve', 'RequestsController@approve');
+    Route::get('request/status/{reqCode?}', 'RequestsController@index');
     Route::resource('request', 'RequestsController');
 });
 
 Route::post('request/{id}/approve', array('uses' => 'Controllers\RequestsController@approve', 'before' => 'admin-auth'));
+
+
+Route::group(array('prefix' => 'hardware', 'before' => 'requestor-auth'), function(){
+    Route::get('/{id}', 'Controllers\Admin\AssetsController@show');
+});
 
 Route::get('hardware/ec/{id}', array(
         'before' => 'requestor-auth',

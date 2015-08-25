@@ -36,11 +36,30 @@ class RequestsController extends \BaseController {
 	 *
 	 * @return Response
 	 */
-	public function index()
+	public function index($reqCode = null)
 	{
 		$user = Sentry::getUser();
-		isset($_GET['reqCode']) ? $reqCode = $_GET['reqCode'] : $reqCode = '';
-		$requests = Request::where('request_code',$reqCode)->orderBy('created_at','desc')->get();
+		
+		$role = $user->role->role;
+		if($role == 'All' && Input::get('roleId'))
+		{
+			$role = Input::get('roleId');
+		}
+		elseif($role != 'All')
+		{
+			$role = $user->role_id;
+		}
+		
+		$reqCode == null ? $reqCode = '' : '';
+
+		if( $role == 'All')
+		{
+			$requests = Request::where('request_code',$reqCode)->orderBy('created_at','desc')->get();
+		}
+		else
+		{
+			$requests = Request::where('request_code',$reqCode)->where('role_id', $role)->orderBy('created_at','desc')->get();
+		}
 
 		if($this->httpRequest->ajax()){
 			foreach($requests as $key => $request){
@@ -48,11 +67,13 @@ class RequestsController extends \BaseController {
 				$requests[$key]->role = $request->roles->role;
 				$requests[$key]->lcnsTypes =  $request->licenseTypes;
 
-				if($user->hasAccess('admin') || $user->id == $requests[$key]->user_id){
-					$requests[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
-				}
-				else if($user->hasAccess('admin')){
-					$requests[$key]->actions .= "";
+				if($requests[$key]->request_code != 'closed'){
+					if($user->hasAccess('admin') || $user->id == $requests[$key]->user_id){
+						$requests[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
+					}
+					if($user->hasAccess('admin')){
+						$requests[$key]->actions .= "<a href=" .URL::to('request/'.$request->id.'/approve'). "><i class='fa fa-check icon-white'></i></a>";
+					}
 				}
 			}
 
@@ -142,10 +163,10 @@ class RequestsController extends \BaseController {
 		//return resource not found if there is no request
 		if(!$request){
 			header(' ', true, 404);
-			return Redirect::route('request/license')->with('error', 'Request not found.');
+			return Redirect::route('request')->with('error', 'Request not found.');
 		}
 
-
+		return View::make('backend/requests/view')->with('request', $request);
 	}
 
 

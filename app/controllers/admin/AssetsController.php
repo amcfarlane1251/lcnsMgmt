@@ -59,27 +59,44 @@ class AssetsController extends AdminController
 
     public function getIndexByEc($ecId)
     {
-        if ($this->request->ajax()){
+        if($this->request->ajax())
+        { 
             $assets = Asset::where('role_id', $_GET['roleId'])->get();
-            foreach($assets as $key => $asset){
-                $assets[$key]->role = $asset->roles->role;
-                $assets[$key]->status = $asset->assetstatus->name;
-                ($assets[$key]->rtd_location_id ? $assets[$key]->location = $asset->defaultLoc->name : $assets[$key]->location = '');
-                if (($assets[$key]->assigned_to !='') && ($assets[$key]->assigned_to > 0)) {
-                    $assets[$key]->inOut = '<a href="'.route('checkin/hardware', $assets[$key]->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
-                } else {
-                    $assets[$key]->inOut = '<a href="'.route('checkout/hardware', $assets[$key]->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
-                }
-                if ($assets[$key]->deleted_at=='') {
-                    $assets[$key]->actions = '<a href="'.route('update/hardware', $assets[$key]->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a>';
-                    if(Sentry::getUser()->hasAccess('admin')){ $assets[$key]->actions .= ' <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $assets[$key]->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($assets[$key]->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';}
-                }
+        }
+        else
+        {
+            $assets = Asset::where('role_id', $ecId)->get();  
+        }
+        
+        foreach($assets as $key => $asset){
+            $assets[$key]->role = $asset->roles->role;
+            $assets[$key]->status = $asset->assetstatus->name;
+            ($assets[$key]->rtd_location_id ? $assets[$key]->location = $asset->defaultLoc->name : $assets[$key]->location = '');
+            
+            if (($assets[$key]->assigned_to !='') && ($assets[$key]->assigned_to > 0))
+            {
+                $assets[$key]->inOut = '<a href="'.route('checkin/hardware', $assets[$key]->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
+            } 
+            else 
+            {
+                $assets[$key]->inOut = '<a href="'.route('checkout/hardware', $assets[$key]->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
             }
+            if ($assets[$key]->deleted_at=='')
+            {
+                $assets[$key]->actions = '<a href="'.route('update/hardware', $assets[$key]->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a>';
+                if(Sentry::getUser()->hasAccess('admin')){ $assets[$key]->actions .= ' <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $assets[$key]->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($assets[$key]->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';}
+            }
+        }
+
+        if ($this->request->ajax()){
             header('Content-Type: application/json');
             echo json_encode($assets);
         }
         else{
-            return View::make('backend/hardware/listing');
+            $user = Sentry::getUser();
+
+            $heading = Lang::get('admin/hardware/general.all') . " - ".$user->role->role;
+            return View::make('backend/hardware/listing')->with('heading', $heading)->with('assets', $assets);
         }
     }
 
@@ -1159,4 +1176,28 @@ class AssetsController extends AdminController
         ->make();
 
 	}
+
+    /**
+    *
+    * List a resource
+    * @return asset
+    **/
+    public function show($id)
+    {
+        $db = new Asset();
+        //get the asset
+        $asset = $db->find($id);
+
+        //get qr code
+        $settings = Setting::getSettings();
+
+        $qrCode = (object) array(
+            'display' => $settings->qr_code == '1',
+            'url' => route('qr_code/hardware', $asset->id)
+        );
+
+        return View::make('backend/hardware/view')->with('asset', $asset)->with('qr_code', $qrCode);
+
+    }
+
 }

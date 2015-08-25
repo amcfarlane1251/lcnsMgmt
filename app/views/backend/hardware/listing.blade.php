@@ -6,7 +6,7 @@
 @stop
 
 @section('content')
-<h2>All Assets</h2>
+<h2>{{$heading}}</h2>
 <div class="row">
 	<table class="table table-striped table-hover" id="ec-assets">
 		<thead>
@@ -22,12 +22,22 @@
 		</thead>
 
 		<tbody>
-
+			@foreach($assets as $obj)
+			<tr>
+				<td>{{$obj->name}}</td>
+				<td><a href="{{URL::to('hardware/'.$obj->id)}}"> {{$obj->asset_tag}} </a></td>
+				<td>{{$obj->role}}</td>
+				<td>{{$obj->status}}</td>
+				<td>{{$obj->location}}</td>
+				<td>{{$obj->inOut}}</td>
+				<td>{{$obj->actions}}</td>
+			</tr>
+			@endforeach
 		</tbody>
 	</table>
 </div>
 
-<script>
+<script>/*
 	path = (location.href).split('/');
 	$.ajax({
 		type: "GET",
@@ -50,6 +60,6 @@
 				);
 			}
 		}
-	})
+	})*/
 </script>
 @stop

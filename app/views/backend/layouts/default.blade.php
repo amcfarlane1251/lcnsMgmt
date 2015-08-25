@@ -284,14 +284,6 @@
 
                 <ul class="submenu{{ (Request::is('hardware*') ? ' active' : '') }}">
                     @if(Sentry::getUser()->hasAccess('admin'))
-                    <li><a href="{{ URL::to('hardware?status=Deployed') }}" {{{ (Request::query('Deployed') ? ' class="active"' : '') }}} >@lang('general.deployed')</a></li>
-                    <li><a href="{{ URL::to('hardware?status=RTD') }}" {{{ (Request::query('RTD') ? ' class="active"' : '') }}} >@lang('general.ready_to_deploy')</a></li>
-                    <li><a href="{{ URL::to('hardware?status=Pending') }}" {{{ (Request::query('Pending') ? ' class="active"' : '') }}} >@lang('general.pending')</a></li>
-                    <li><a href="{{ URL::to('hardware?status=Undeployable') }}" {{{ (Request::query('Undeployable') ? ' class="active"' : '') }}} >@lang('general.undeployable')</a></li>
-                     <li><a href="{{ URL::to('hardware?status=Archived') }}" {{{ (Request::query('Archived') ? ' class="active"' : '') }}} >@lang('admin/hardware/general.archived')</a></li>
-                     <li><a href="{{ URL::to('hardware?status=Requestable') }}" {{{ (Request::query('Requestable') ? ' class="active"' : '') }}} >@lang('admin/hardware/general.requestable')</a></li>
-
-                    <li><a href="{{ URL::to('hardware') }}">@lang('general.list_all')</a></li>
 
                     <li class="divider">&nbsp;</li>
                     <li><a href="{{ URL::to('hardware/models') }}" {{{ (Request::is('hardware/models*') ? ' class="active"' : '') }}} >@lang('general.asset_models')</a></li>
@@ -364,63 +356,16 @@
 <!-- main container -->
     <div class="content">
 
-        @if ((Sentry::check()) && (Sentry::getUser()->hasAccess('admin')))
-        @if (Request::is('/'))
+        <div id="pad-wrapper">
 
-        <!-- upper main stats -->
-        <div id="main-stats">
-            <div class="row stats-row">
-                <div class="col-md-3 col-sm-3 stat">
-                    <div class="data">
-                            <a href="{{ URL::to('hardware') }}">
-                                <span class="number">{{ number_format(Asset::assetcount()) }}</span>
-                                   <span style="color:black">@lang('general.total_assets')</span>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-3 stat">
-                        <div class="data">
-                            <a href="{{ URL::to('hardware?status=RTD') }}">
-                                <span class="number">{{ number_format(Asset::availassetcount()) }}</span>
-                                <span style="color:black">@lang('general.assets_available')</span>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-3 stat">
-                        <div class="data">
-                            <a href="{{ URL::to('admin/licenses') }}">
-                                <span class="number">{{ number_format(License::assetcount()) }}</span>
-                                <span style="color:black">@lang('general.total_licenses')</span>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-3 stat last">
-                        <div class="data">
-                            <a href="{{ URL::to('admin/licenses') }}">
-                                <span class="number">{{ number_format(License::availassetcount()) }}</span>
-                                <span style="color:black">@lang('general.licenses_available')</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                <!-- Notifications -->
+                @include('frontend/notifications')
 
+                <!-- Content -->
+                @yield('content')
 
-        <!-- end upper main stats -->
-        @endif
-        @endif
-
-
-                <div id="pad-wrapper">
-
-                        <!-- Notifications -->
-                        @include('frontend/notifications')
-
-                        <!-- Content -->
-                        @yield('content')
-
-                </div>
-            </div>
         </div>
+        
     </div>
 
     <footer>

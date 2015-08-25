@@ -17,4 +17,5 @@ return array(
     'pending'  					=> 'Pending',
     'undeployable'  			=> 'Undeployable',
     'view'  					=> 'View Asset',
+    'all'                       => 'All Assets',
 );
