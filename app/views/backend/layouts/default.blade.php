@@ -268,7 +268,7 @@
                         @foreach($roles as $key => $value)
                             @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
                                 <li>
-                                    <a href="{{ URL::to('request/ec/'.$key) }}">
+                                    <a href="{{ URL::to('role/'.$key.'/request') }}">
                                         @lang('request.'.$value)
                                     </a>
                                 </li>
@@ -295,18 +295,19 @@
 
                 <ul class="submenu{{ (Request::is('hardware*') ? ' active' : '') }}">
                     @if(Sentry::getUser()->hasAccess('admin'))
-
-                    <li class="divider">&nbsp;</li>
-                    <li><a href="{{ URL::to('hardware/models') }}" {{{ (Request::is('hardware/models*') ? ' class="active"' : '') }}} >@lang('general.asset_models')</a></li>
-                    <li><a href="{{ URL::to('admin/settings/categories') }}" {{{ (Request::is('admin/settings/categories*') ? ' class="active"' : '') }}} >@lang('general.categories')</a></li>
-                    <li><a href="{{ URL::to('hardware?status=Deleted') }}" {{{ (Request::query('Deleted') ? ' class="active"' : '') }}} >@lang('general.deleted')</a></li>
-
-                    <li class="divider">&nbsp;</li>
+                        <li>
+                            <a href="{{ URL::to('hardware/ec/'.Sentry::getUser()->role->id) }}">All Assets</a>
+                        </li>
                     @endif
-                    <li>
-                        <a href="{{ URL::to('hardware/ec/'.Sentry::getUser()->role->id) }}">All Assets</a>
-                    </li>
-
+                    @foreach($roles as $key => $value)
+                        @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
+                            <li>
+                                <a href="{{ URL::to('role/'.$key.'/asset') }}">
+                                    @lang('hardware.'.$value)
+                                </a>
+                            </li>
+                        @endif
+                    @endforeach
                 </ul>
             </li>
             @if(Sentry::getUser()->hasAccess('admin'))

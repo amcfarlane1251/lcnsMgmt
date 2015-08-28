@@ -15,7 +15,7 @@ class DashboardController extends \BaseController
     public function dashboardRouter(){
         $user = Sentry::getUser();
         $ec = $user->filterRoles();
-        error_log(print_R($ec,true));
+
         if ($user->hasAccess('admin')){
             return View::make('backend/adminDashboard')->with('ec',$ec);
         }

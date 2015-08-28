@@ -12,7 +12,9 @@
 */
 
 App::before(function ($request) {
-    //
+    View::composer('backend/layouts/default', function($view) {
+        $view->with('roles', Role::where('id', '!=', '1')->lists('role', 'id'));
+    });
 });
 
 

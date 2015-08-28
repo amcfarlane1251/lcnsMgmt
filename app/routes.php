@@ -131,6 +131,12 @@ Route::group(array('prefix' => 'hardware', 'namespace' => 'Controllers\Admin', '
 */
 
 Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
+    Route::get('role/{id}/request', 'RolesController@indexRequests');
+    Route::get('role/{id}/asset', 'RolesController@indexAssets');
+    Route::resource('roles', 'RolesController');
+});
+//Request Routes
+Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
     Route::get('request/{id}/approve', 'RequestsController@edit');
     Route::post('request/{id}/approve', 'RequestsController@approve');
     Route::get('request/status/{reqCode?}', 'RequestsController@index');
@@ -139,7 +145,7 @@ Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), 
 
 Route::post('request/{id}/approve', array('uses' => 'Controllers\RequestsController@approve', 'before' => 'admin-auth'));
 
-
+//Hardware Routes
 Route::group(array('prefix' => 'hardware', 'before' => 'requestor-auth'), function(){
     Route::get('/{id}', 'Controllers\Admin\AssetsController@show');
 });
@@ -150,9 +156,7 @@ Route::get('hardware/ec/{id}', array(
         )
 );
 
-/**
- * License Routes
- *********/
+//License Routes
 Route::group(array('prefix' => 'license', 'before' => 'requestor-auth'), function(){
     Route::get('/ec/{id}', 'Controllers\Admin\LicensesController@getIndexByEc');
 });
