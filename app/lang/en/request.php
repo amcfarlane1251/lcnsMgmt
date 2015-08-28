@@ -14,6 +14,8 @@ return array(
 	'details' => 'Details',
 	'requestedLcns' => 'Requested License(s)',
 
+	'Army' => 'Army Requests',
+
 
 	'message.success.create' => 'Your request has been submitted',
 	'message.success.delete' => 'The request has been removed',

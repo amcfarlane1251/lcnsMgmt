@@ -266,17 +266,21 @@
 
                         <li class="divider">&nbsp;</li>
                         @foreach($roles as $key => $value)
-                            <li>
-                                <a href="{{ URL::to('request/ec/'.$key) }}">
-                                    @lang('request.'.$value)
+                            @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
+                                <li>
+                                    <a href="{{ URL::to('request/ec/'.$key) }}">
+                                        @lang('request.'.$value)
+                                    </a>
+                                </li>
+                            @endif
+                        @endforeach
+                        @if(Sentry::getUser()->hasAccess('admin'))
+                            <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
+                                <a href="{{ URL::to('request') }}">
+                                    @lang('request.viewAll')
                                 </a>
                             </li>
-                        @endforeach
-                        <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                            <a href="{{ URL::to('request') }}">
-                                @lang('request.viewAll')
-                            </a>
-                        </li>
+                        @endif
                     </ul>
 
                 </li>
