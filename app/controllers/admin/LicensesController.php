@@ -922,4 +922,20 @@ class LicensesController extends AdminController
         ->orderColumns('name','serial','totalSeats','remaining','purchase_date','actions')
         ->make();
     }
+
+    public function getIndexByEc($id)
+    {
+        //check if the user has access to these resources
+        $user = Sentry::getUser();
+        $userRoleId = $user->role->id;
+        if($userRoleId != $id && (!$user->hasAccess('admin')) )
+        {
+            Redirect::route('home')->with('error','Insufficient access');
+        }
+
+        //get the licenses for the specified role
+        $licenseObj = new License();
+        $licenses = $licenseObj->filterByRole($id);
+        return View::make('backend/licenses/listing')->with('licenses', $licenses);
+    }
 }

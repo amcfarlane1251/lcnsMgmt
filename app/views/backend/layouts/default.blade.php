@@ -265,6 +265,13 @@
                         </li>
 
                         <li class="divider">&nbsp;</li>
+                        @foreach($roles as $key => $value)
+                            <li>
+                                <a href="{{ URL::to('request/ec/'.$key) }}">
+                                    @lang('request.'.$value)
+                                </a>
+                            </li>
+                        @endforeach
                         <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                             <a href="{{ URL::to('request') }}">
                                 @lang('request.viewAll')

@@ -150,6 +150,13 @@ Route::get('hardware/ec/{id}', array(
         )
 );
 
+/**
+ * License Routes
+ *********/
+Route::group(array('prefix' => 'license', 'before' => 'requestor-auth'), function(){
+    Route::get('/ec/{id}', 'Controllers\Admin\LicensesController@getIndexByEc');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes

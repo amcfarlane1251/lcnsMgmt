@@ -36,63 +36,11 @@ class DashboardController extends \BaseController
 
         // get license info
         $licenseObj = new License();
-        $lcnsTypes = LicenseType::lists('name', 'id');
-        $licenses = array();
-
-        //get the total amount of licenses
-        $totalAlloc = $licenseObj->countTotalByRole($roleId);
-        $totalUsed = $licenseObj->countUsedByRole($roleId);
-        $totalRemaining = $licenseObj->countRemainingByRole($roleId);
+        $licenses = $licenseObj->populateDashboard($roleId);
 
         //get asset info
-        $allAssets = DB::table('models')
-                    ->join('assets', 'assets.model_id', '=','models.id')
-                    ->orwhere(function ($query) use ($roleId) {
-                        $query->where('assets.role_id', $roleId);
-                    })->get();
-        $assets = array();
-
-        //populate licenses array
-        foreach($lcnsTypes as $key => $type){
-            $allocated = $licenseObj->countTotalByType($key, $roleId);
-            $used = $licenseObj->countUsedByType($key, $roleId);
-            $remaining = $licenseObj->countRemainingByType($key, $roleId);
-
-            $licenses[$key] = new \stdClass();
-            $licenses[$key]->name = $type;
-            $licenses[$key]->allocated = $allocated;
-            $licenses[$key]->used = $used; 
-            $licenses[$key]->remaining = $remaining;
-
-            //get percentages for chart
-            if($totalAlloc == 0){$percentAlloc = 25;}else{$percentAlloc = ($licenses[$key]->allocated / $totalAlloc) * 100;}
-
-            $data = array(
-                'allocated' => $percentAlloc
-            );
-            $licenses[$key]->percentages = new \ArrayObject($data);
-
-        }
-
-        //populate assets array
-        foreach($allAssets as $key => $asset){
-            $modelObj = Asset::find($asset->id);
-            if($modelObj->assigneduser){
-                $location = $modelObj->assetloc->name;
-            }
-            elseif($modelObj->defaultLoc){
-                $location = $modelObj->defaultLoc->name;
-            }
-            else{
-                $location = null;
-            }
-
-            $assets[$key] = new \stdClass();
-            $assets[$key]->model = $asset->name;
-            $assets[$key]->assetTag = $asset->asset_tag;
-            $assets[$key]->numOfLcns = $modelObj->licenseSeatsCount();
-            $assets[$key]->location = $location;
-        }
+        $assetObj = new Asset();
+        $assets = $assetObj->populateDashboard($roleId);
 
         return View::make('backend/dashboard')->with('licenses',$licenses)->with('assets',$assets);
     }

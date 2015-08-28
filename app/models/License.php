@@ -181,6 +181,37 @@ class License extends Depreciable
             ->update(array('asset_id' => $assetId));
     }
 
+    public function populateDashboard($roleId)
+    {        
+        $licenses = array();
+        $lcnsTypes = LicenseType::lists('name', 'id');
+        //get the total amount of licenses
+        $totalAlloc = $this->countTotalByRole($roleId);
+        $totalUsed = $this->countUsedByRole($roleId);
+        $totalRemaining = $this->countRemainingByRole($roleId);
+
+        foreach($lcnsTypes as $key => $type){
+            $allocated = $this->countTotalByType($key, $roleId);
+            $used = $this->countUsedByType($key, $roleId);
+            $remaining = $this->countRemainingByType($key, $roleId);
+
+            $licenses[$key] = new \stdClass();
+            $licenses[$key]->name = $type;
+            $licenses[$key]->allocated = $allocated;
+            $licenses[$key]->used = $used; 
+            $licenses[$key]->remaining = $remaining;
+
+            //get percentages for chart
+            if($totalAlloc == 0){$percentAlloc = 25;}else{$percentAlloc = ($licenses[$key]->allocated / $totalAlloc) * 100;}
+
+            $data = array(
+                'allocated' => $percentAlloc
+            );
+            $licenses[$key]->percentages = new \ArrayObject($data);
+        }
+        return $licenses;
+    }
+
     public function countTotalByType($typeId, $roleId = null){
         return DB::table('licenses')
             ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
@@ -234,5 +265,15 @@ class License extends Depreciable
                 $query->where('licenses.role_id', $roleId)
                 ->whereNull('license_seats.assigned_to');
             })->count();
+    }
+
+    /**
+     * Filter licenses by specified role
+     **/
+    public function filterByRole($roleId)
+    {
+        return DB::table('licenses')
+            ->where('roleid', $roleId)
+            ->get();
     }
 }

@@ -21,6 +21,8 @@ class BaseController extends Controller
 
         //
         $this->messageBag = new Illuminate\Support\MessageBag;
+
+        $this->composer();
     }
 
     /**
@@ -33,6 +35,13 @@ class BaseController extends Controller
         if ( ! is_null($this->layout)) {
             $this->layout = View::make($this->layout);
         }
+    }
+
+    protected function composer()
+    {
+        View::composer('backend/layouts/default', function($view) {
+            $view->with('roles', Role::where('id', '!=', '1')->lists('role', 'id'));
+        });
     }
 
 }

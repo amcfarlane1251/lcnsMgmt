@@ -374,5 +374,36 @@ class Asset extends Depreciable
 		return $query->whereNotNull('deleted_at');
 	}
 
+    public function populateDashboard($roleId)
+    {
+        //get asset info
+        $allAssets = DB::table('models')
+                    ->join('assets', 'assets.model_id', '=','models.id')
+                    ->orwhere(function ($query) use ($roleId) {
+                        $query->where('assets.role_id', $roleId);
+                    })->get();
+        $assets = array();        
 
+        //populate assets array
+        foreach($allAssets as $key => $asset){
+            $modelObj = Asset::find($asset->id);
+            if($modelObj->assigneduser){
+                $location = $modelObj->assetloc->name;
+            }
+            elseif($modelObj->defaultLoc){
+                $location = $modelObj->defaultLoc->name;
+            }
+            else{
+                $location = null;
+            }
+
+            $assets[$key] = new \stdClass();
+            $assets[$key]->model = $asset->name;
+            $assets[$key]->assetTag = $asset->asset_tag;
+            $assets[$key]->numOfLcns = $modelObj->licenseSeatsCount();
+            $assets[$key]->location = $location;
+        }
+
+        return $assets;
+    }
 }
