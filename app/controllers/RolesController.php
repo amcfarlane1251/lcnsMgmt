@@ -68,7 +68,7 @@ class RolesController extends \BaseController {
 		}
 		else{
 			//html request
-			return View::make('backend.requests.index')->with('requests', $requests)->with('user', $user);
+			return View::make('backend.requests.index')->with('requests', $requests)->with('user', $user)->with('roleId', $roleId);
 		}		
 	}
 

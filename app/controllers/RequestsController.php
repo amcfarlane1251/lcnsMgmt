@@ -31,6 +31,61 @@ class RequestsController extends \BaseController {
         'lcnsTypes'        => 'required',
     );
 
+ 	/**
+	 * Display a listing of the resource.
+	 *
+	 * @return Response
+	 */
+	public function index($reqCode = null)
+	{
+		$user = Sentry::getUser();
+		
+		$role = $user->role->role;
+		if($role == 'All' && Input::get('roleId'))
+		{
+			$role = Input::get('roleId');
+		}
+		elseif($role != 'All')
+		{
+			$role = $user->role_id;
+		}
+		
+		$reqCode == null ? $reqCode = '' : '';
+
+		if( $role == 'All')
+		{
+			$requests = Request::where('request_code',$reqCode)->orderBy('created_at','desc')->get();
+		}
+		else
+		{
+			$requests = Request::where('request_code',$reqCode)->where('role_id', $role)->orderBy('created_at','desc')->get();
+		}
+
+		if($this->httpRequest->ajax()){
+			foreach($requests as $key => $request){
+				$requests[$key]->requester = $request->owner->first_name." ".$request->owner->last_name;
+				$requests[$key]->role = $request->roles->role;
+				$requests[$key]->lcnsTypes =  $request->licenseTypes;
+
+				if($requests[$key]->request_code != 'closed'){
+					if($user->hasAccess('admin') || $user->id == $requests[$key]->user_id){
+						$requests[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
+					}
+					if($user->hasAccess('admin')){
+						$requests[$key]->actions .= "<a href=" .URL::to('request/'.$request->id.'/approve'). "><i class='fa fa-check icon-white'></i></a>";
+					}
+				}
+			}
+
+			header('Content-type: application/json');
+			echo json_encode($requests);
+		}
+		else{
+			//html request
+			return View::make('backend.requests.index')->with('requests', $requests)->with('user', $user);
+		}
+	}
+
 	/**
 	 * Show the form for creating a new resource.
 	 *
@@ -259,7 +314,7 @@ class RequestsController extends \BaseController {
 		$request->request_code = 'closed';
 		$request->save();
 
-		return Redirect::to('request')->with('success', 'Request Approved');
+		return Redirect::to("role/$request->role_id")->with('success', 'Request Approved');
 
 	}
 }

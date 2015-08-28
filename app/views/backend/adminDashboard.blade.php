@@ -21,15 +21,15 @@
         <div class="col-md-3 col-sm-3 stat">
             <div class="data">
                 <a href="{{ URL::to('request') }}">
-                    <span class="number">{{ number_format(Asset::availassetcount()) }}</span>
+                    <span class="number">{{ number_format(Requests::openReqCount()) }}</span>
                     <span style="color:black">@lang('request.open')</span>
                 </a>
             </div>
         </div>
         <div class="col-md-3 col-sm-3 stat last">
             <div class="data">
-                <a href="{{ URL::to('request/closed') }}">
-                    <span class="number">{{ number_format(License::availassetcount()) }}</span>
+                <a href="{{ URL::to('request/status/closed') }}">
+                    <span class="number">{{ number_format(Requests::closedReqCount()) }}</span>
                     <span style="color:black">@lang('request.closed')</span>
                 </a>
             </div>

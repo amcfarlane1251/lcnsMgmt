@@ -139,7 +139,6 @@ Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), 
 Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
     Route::get('request/{id}/approve', 'RequestsController@edit');
     Route::post('request/{id}/approve', 'RequestsController@approve');
-    Route::get('request/status/{reqCode?}', 'RequestsController@index');
     Route::resource('request', 'RequestsController');
 });
 

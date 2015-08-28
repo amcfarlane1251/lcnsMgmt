@@ -10,13 +10,13 @@
 @section('content')
 	<div class="page-header">
         <div class="pull-right">
-        	@if(Request::is('request/closed'))
-	            <a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('request') }}">@lang('request.open')</a>
+        	@if(Request::is('request?reqCode=closed'))
+	            <a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('role/'.$roleId.'/request') }}">@lang('request.open')</a>
         	@else
-        		<a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('request/status/closed') }}">@lang('request.closed')</a>
+        		<a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('role/'.$roleId.'/request?reqCode=closed') }}">@lang('request.closed')</a>
         	@endif
         </div>
-        <h3> @if(Request::is('request/closed')) @lang('request.closed') @else @lang('request.open') @endif </h3>
+        <h3> @if(Request::is('request')) @lang('request.closed') @else @lang('request.open') @endif </h3>
 	</div>
 
 		<table class="table table-striped table-hover" id="requests">
@@ -63,37 +63,39 @@
 
 		$('#request-status').click(function(e){
 			e.preventDefault() ? e.preventDefault() : e.returnValue = false;
+			var urlArr = $(this).attr('href').split('?');
+			if(urlArr[1]){
+				var query = urlArr[1].split('=');
+				reqCode = query[1];
+			}
+			else{
+				reqCode = '';
+			}
 
 			//seperate uri segments into array
 			var pathArr = $(this).attr('href').split('/');
 			//get the base uri of the application
 			var baseUri = $(this).attr('href').split('/request');
 			baseUri = baseUri[0];
-			
-			var reqCode = '';
 
 			//switching to closed requests
-			if(jQuery.inArray('closed', pathArr) >= 0){
+			if(reqCode){
 				//get the url for use in the ajax request 
 				url = $(this).attr('href');
 
 				$(this).attr('href', baseUri+"/request");
 				$('.page-header h3').text('Closed Requests');
 				$(this).text('Open Requests');
-
-				reqCode = 'closed';
 			}
 			//switching to open requests
 			else{
 				url = $(this).attr('href');
 
-				$(this).attr('href', baseUri+"/request/status/closed");
+				$(this).attr('href', baseUri+"/request?reqCode=closed");
 				$('.page-header h3').text('Open Requests');
 				$(this).text('Closed Requests');
-
-				reqCode = '';
 			}
-
+			console.log(url);
 			$.ajax({
 				type:'GET',
 				url:url,
