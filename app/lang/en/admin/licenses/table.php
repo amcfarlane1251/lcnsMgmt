@@ -2,7 +2,7 @@
 
 return array(
 
-    'assigned_to'   	=> 'Assigned To',
+    'assigned_to'   	=> 'User Assigned',
     'checkout'   		=> 'In/Out',
     'id'      			=> 'ID',
     'license_email'   	=> 'License Email',
@@ -13,5 +13,6 @@ return array(
     'hardware'   		=> 'Hardware',
     'serial'   			=> 'Serial',
     'title'      		=> 'License',
+    'updated'           => 'Updated At',
 
 );

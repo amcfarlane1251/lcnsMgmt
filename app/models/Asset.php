@@ -381,6 +381,7 @@ class Asset extends Depreciable
                     ->join('assets', 'assets.model_id', '=','models.id')
                     ->orwhere(function ($query) use ($roleId) {
                         $query->where('assets.role_id', $roleId);
+                        $query->where('assets.deleted_at', NULL);
                     })->get();
         $assets = array();        
 

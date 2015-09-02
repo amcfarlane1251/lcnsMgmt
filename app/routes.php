@@ -133,6 +133,7 @@ Route::group(array('prefix' => 'hardware', 'namespace' => 'Controllers\Admin', '
 Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
     Route::get('role/{id}/request', 'RolesController@indexRequests');
     Route::get('role/{id}/asset', 'RolesController@indexAssets');
+    Route::get('role/{id}/license', 'RolesController@indexLicenses');
     Route::resource('roles', 'RolesController');
 });
 //Request Routes
@@ -170,16 +171,6 @@ Route::group(array('prefix' => 'license', 'before' => 'requestor-auth'), functio
 */
 
 Route::group(array('prefix' => 'admin', 'before' => 'admin-auth', 'namespace' => 'Controllers\Admin'), function () {
-
-    /*--- Roles API ---*/
-    Route::group(array('prefix'=>'roles'),function(){
-        Route::resource('/', 'RolesController');
-    });
-    # Roles
-    /*Route::group(array('prefix'=>'roles'),function(){
-        Route::get('/', array('as'=>'role', 'uses' => 'RolesController@getIndex'));
-        Route::get('create', array('as'=>'create/role', 'uses' => 'RolesController@getCreate'));
-    });*/
 
     # Licenses
     Route::group(array('prefix' => 'licenses'), function () {

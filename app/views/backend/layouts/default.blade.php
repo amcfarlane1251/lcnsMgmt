@@ -241,9 +241,8 @@
             @endif
             </ul>
     </header>
-
-
     <!-- end navbar -->
+    
     @if (Sentry::check())
     <!-- sidebar -->
     <div id="sidebar-nav">
@@ -297,7 +296,7 @@
                 <ul class="submenu{{ (Request::is('hardware*') ? ' active' : '') }}">
                     @if(Sentry::getUser()->hasAccess('admin'))
                         <li>
-                            <a href="{{ URL::to('hardware/ec/'.Sentry::getUser()->role->id) }}">All Assets</a>
+                            <a href="{{ URL::to('hardware') }}">All Assets</a>
                         </li>
                     @endif
                     @foreach($roles as $key => $value)
@@ -306,6 +305,30 @@
                                 <a href="{{ URL::to('role/'.$key.'/asset') }}">
                                     @lang('hardware.'.$value)
                                 </a>
+                            </li>
+                        @endif
+                    @endforeach
+                </ul>
+            </li>
+
+            <li>
+                <a href="{{URL::to('licenses')}}" class="dropdown-toggle">
+                    <i class="fa fa-certificate"></i>
+                    <span>@lang('general.licenses')</span>
+                    <b class="fa fa-chevron-down"></b>
+                </a>
+
+                <ul class="submenu">
+                    @if(Sentry::hasAccess('admin'))
+                        <li>
+                            <a href="{{URL::to('admin/licenses')}}">@lang('licenses.all')</a>
+                        </li>
+                    @endif
+
+                    @foreach($roles as $key => $value)
+                        @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
+                            <li>
+                                <a href="{{URL::to('role/'.$key.'/license')}}">@lang('licenses.'.$value)</a>
                             </li>
                         @endif
                     @endforeach

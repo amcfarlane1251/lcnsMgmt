@@ -267,6 +267,46 @@ class License extends Depreciable
             })->count();
     }
 
+    public static function getByRole($roleId)
+    {
+        $licenses = DB::table('licenses')
+                        ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
+                        ->where('licenses.role_id', $roleId)
+                        ->orderBy('license_seats.updated_at', 'DESC')
+                        ->orderBy('name', 'ASC')
+                        ->get();
+        
+        $lcnsObj = array();
+
+        foreach($licenses as $key => $lcns)
+        {
+            //get assigned user and assigned asset, if applicable
+            $user = User::where('id', $lcns->assigned_to)->lists('id','first_name','last_name');
+            $assignedUser = '';
+
+            $asset = Asset::where('id', $lcns->asset_id)->lists('asset_tag', 'id');
+            $assignedAsset = '';
+
+            if($user)
+            {
+                $assignedUser = "<a href=".URL::to('user/'.key($user)).">".$user[key($user)]."</a>";
+            }
+            if($asset)
+            {
+                $assignedAsset = "<a href=".URL::to('hardware/'.key($asset)).">".$asset[key($asset)]."</a>";
+            }
+
+            $lcnsObj[$key] = new \stdClass();
+            $lcnsObj[$key]->id = $lcns->id;
+            $lcnsObj[$key]->name = $lcns->name;
+            $lcnsObj[$key]->assignedUser = $assignedUser;
+            $lcnsObj[$key]->assignedAsset = $assignedAsset;
+            $lcnsObj[$key]->updatedAt = $lcns->updated_at;
+        }
+
+        return $lcnsObj;
+    }
+
     /**
      * Filter licenses by specified role
      **/

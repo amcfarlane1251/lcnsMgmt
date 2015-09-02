@@ -8,6 +8,7 @@ use Lang;
 use License;
 use Redirect;
 use Requests as Request;
+use Role;
 use Route;
 use Sentry;
 use Validator;
@@ -19,6 +20,8 @@ class RolesController extends \BaseController {
 	public function __construct(HttpRequest $request)
 	{
 		$this->httpRequest = $request;
+		$this->user = Sentry::getUser();
+		$this->role = $this->user->role;
 	}
 	/**
 	 * Display a listing of the resource.
@@ -91,19 +94,23 @@ class RolesController extends \BaseController {
             $assets[$key]->status = $asset->assetstatus->name;
             ($assets[$key]->rtd_location_id ? $assets[$key]->location = $asset->defaultLoc->name : $assets[$key]->location = '');
             
-            if (($assets[$key]->assigned_to !='') && ($assets[$key]->assigned_to > 0))
+            if($user->hasAccess('admin'))
             {
-                $assets[$key]->inOut = '<a href="'.route('checkin/hardware', $assets[$key]->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
-            } 
-            else 
-            {
-                $assets[$key]->inOut = '<a href="'.route('checkout/hardware', $assets[$key]->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
-            }
-            if ($assets[$key]->deleted_at=='')
-            {
-                $assets[$key]->actions = '<a href="'.route('update/hardware', $assets[$key]->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a>';
-                if($user->hasAccess('admin')){ $assets[$key]->actions .= ' <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $assets[$key]->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($assets[$key]->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';}
-            }
+	            if (($assets[$key]->assigned_to !='') && ($assets[$key]->assigned_to > 0))
+	            {
+	                $assets[$key]->inOut = '<a href="'.route('checkin/hardware', $assets[$key]->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
+	            } 
+	            else 
+	            {
+	                $assets[$key]->inOut = '<a href="'.route('checkout/hardware', $assets[$key]->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
+	            }
+
+	            if ($assets[$key]->deleted_at=='')
+	            {
+	                $assets[$key]->actions = '<a href="'.route('update/hardware', $assets[$key]->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a>';
+	                $assets[$key]->actions .= ' <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $assets[$key]->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($assets[$key]->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
+	            }
+	        }
         }
 
         if ($this->httpRequest->ajax()){
@@ -114,6 +121,29 @@ class RolesController extends \BaseController {
             $heading = Lang::get('admin/hardware/general.all') . " - ".$user->role->role;
             return View::make('backend/hardware/listing')->with('heading', $heading)->with('assets', $assets);
         }
+	}
+
+	public function indexLicenses($roleId)
+	{
+		if($this->role->role != 'All' && $this->role->id != $roleId)
+		{
+			return Redirect::to('/')->with('error', 'Cannot access that EC');
+		}
+
+		//get the licenses object and the role key for language files
+		$licenses = License::getByRole($roleId);
+		$roleKey = Role::getRoleById($roleId); $roleKey = $roleKey[0];
+
+		if($this->httpRequest->ajax())
+		{
+			header('Content-Type: application/json');
+			echo json_encode($licenses);
+		}
+		else
+		{
+			$heading = Lang::get('admin/licenses/general.all') ." - " .$roleKey;
+			return View::make('backend/licenses/listing')->with('heading', $heading)->with('licenses', $licenses)->with('roleId', $roleId);
+		}
 	}
 
 	/**
