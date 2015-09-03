@@ -17,7 +17,7 @@ class DashboardController extends \BaseController
         $ec = $user->filterRoles();
 
         if ($user->hasAccess('admin')){
-            return View::make('backend/adminDashboard')->with('ec',$ec);
+            return View::make('backend/adminDashboard')->with('ec',$ec)->with('userRoleId', $user->role_id);
         }
         else{
             return $this->getIndex();

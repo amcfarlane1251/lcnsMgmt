@@ -37,17 +37,24 @@ class RolesController extends \BaseController {
 	{	
 		//get user role
 		$user = Sentry::getUser();
-		$role = $user->role->role;
+		$role = $user->role;
 
 		//get request code
 		(Input::get('reqCode') ? $reqCode = Input::get('reqCode') : $reqCode = '');
 
-		if($role != 'All' && $user->role->id != $roleId)
+		if($role->role != 'All' && $role->id != $roleId)
 		{
 			return Redirect::to('/')->with('error', 'Cannot access that EC');
 		}
 
-		$requests = Request::where('request_code',$reqCode)->where('role_id', $roleId)->orderBy('created_at','desc')->get();
+		if($role->role == 'All' && $role->id = $roleId)
+		{
+			$requests = Request::where('request_code',$reqCode)->orderBy('created_at','desc')->get();
+		}
+		else
+		{
+			$requests = Request::where('request_code',$reqCode)->where('role_id', $roleId)->orderBy('created_at','desc')->get();
+		}
 
 		if($this->httpRequest->ajax()){
 			//ajax request so return json

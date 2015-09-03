@@ -134,7 +134,7 @@ Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), 
     Route::get('role/{id}/request', 'RolesController@indexRequests');
     Route::get('role/{id}/asset', 'RolesController@indexAssets');
     Route::get('role/{id}/license', 'RolesController@indexLicenses');
-    Route::resource('roles', 'RolesController');
+    Route::resource('role', 'RolesController');
 });
 //Request Routes
 Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){

@@ -314,7 +314,7 @@ class RequestsController extends \BaseController {
 		$request->request_code = 'closed';
 		$request->save();
 
-		return Redirect::to("role/$request->role_id")->with('success', 'Request Approved');
+		return Redirect::to("dashboard/$request->role_id")->with('success', 'Request Approved');
 
 	}
 }

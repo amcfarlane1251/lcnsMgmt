@@ -20,7 +20,7 @@
     <div class="row stats-row">
         <div class="col-md-3 col-sm-3 stat">
             <div class="data">
-                <a href="{{ URL::to('request') }}">
+                <a href="{{ URL::to('role/'.$userRoleId.'/request') }}">
                     <span class="number">{{ number_format(Requests::openReqCount()) }}</span>
                     <span style="color:black">@lang('request.open')</span>
                 </a>
