@@ -6,8 +6,10 @@ use Illuminate\Http\Request as HttpRequest;
 use Input;
 use Lang;
 use License;
+use Form;
 use Redirect;
 use Requests as Request;
+use Response;
 use Role;
 use Route;
 use Sentry;
@@ -47,7 +49,7 @@ class RolesController extends \BaseController {
 			return Redirect::to('/')->with('error', 'Cannot access that EC');
 		}
 
-		if($role->role == 'All' && $role->id = $roleId)
+		if($role->role == 'All' && $role->id == $roleId)
 		{
 			$requests = Request::where('request_code',$reqCode)->orderBy('created_at','desc')->get();
 		}
@@ -64,7 +66,7 @@ class RolesController extends \BaseController {
 				$requests[$key]->lcnsTypes =  $request->licenseTypes;
 
 				if($requests[$key]->request_code != 'closed'){
-					if($user->hasAccess('admin') || $user->id == $requests[$key]->user_id){
+					if($user->hasAccess('admin') || $user->role->id == $requests[$key]->role_id){
 						$requests[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
 					}
 					if($user->hasAccess('admin')){
@@ -74,7 +76,7 @@ class RolesController extends \BaseController {
 			}
 
 			header('Content-type: application/json');
-			echo json_encode($requests);
+			return Response::json(array('requests'=>$requests, 'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id), 200);
 		}
 		else{
 			//html request

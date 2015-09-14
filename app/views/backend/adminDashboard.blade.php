@@ -28,7 +28,7 @@
         </div>
         <div class="col-md-3 col-sm-3 stat last">
             <div class="data">
-                <a href="{{ URL::to('request/status/closed') }}">
+                <a href="{{ URL::to('role/'.$userRoleId.'/request?reqCode=closed') }}">
                     <span class="number">{{ number_format(Requests::closedReqCount()) }}</span>
                     <span style="color:black">@lang('request.closed')</span>
                 </a>

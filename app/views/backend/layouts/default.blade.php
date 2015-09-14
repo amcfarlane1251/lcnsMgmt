@@ -38,6 +38,7 @@
         <link rel="stylesheet" href="{{ asset('assets/css/lib/jquery.dataTables.css') }}" type="text/css" media="screen" />
         <link rel="stylesheet" href="{{ asset('assets/css/compiled/dataTables.colVis.css') }}" type="text/css" media="screen" />
         <link rel="stylesheet" href="{{ asset('assets/css/compiled/dataTables.tableTools.css') }}" type="text/css" media="screen" />
+        <link rel="stylesheet" href="{{ asset('assets/css/compiled/styles.css') }}" type="text/css" media="screen" />
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/compiled/print.css') }}" media="print" />
 
 
@@ -263,8 +264,14 @@
                         <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                             <a href="{{ URL::to('request/create') }}">@lang('request.requestLicense')</a>
                         </li>
-
                         <li class="divider">&nbsp;</li>
+                        @if(Sentry::getUser()->hasAccess('admin'))
+                            <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
+                                <a href="{{ URL::to('role/'.$user->role->id.'/request') }}">
+                                    @lang('request.viewAll')
+                                </a>
+                            </li>
+                        @endif
                         @foreach($roles as $key => $value)
                             @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
                                 <li>
@@ -274,13 +281,6 @@
                                 </li>
                             @endif
                         @endforeach
-                        @if(Sentry::getUser()->hasAccess('admin'))
-                            <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                                <a href="{{ URL::to('role/'.$user->role->id.'/request') }}">
-                                    @lang('request.viewAll')
-                                </a>
-                            </li>
-                        @endif
                     </ul>
 
                 </li>
@@ -303,7 +303,7 @@
                         @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
                             <li>
                                 <a href="{{ URL::to('role/'.$key.'/asset') }}">
-                                    @lang('hardware.'.$value)
+                                    @lang('admin/hardware/general.'.$value)
                                 </a>
                             </li>
                         @endif
@@ -328,7 +328,7 @@
                     @foreach($roles as $key => $value)
                         @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
                             <li>
-                                <a href="{{URL::to('role/'.$key.'/license')}}">@lang('licenses.'.$value)</a>
+                                <a href="{{URL::to('role/'.$key.'/license')}}">@lang('admin/licenses/general.'.$value)</a>
                             </li>
                         @endif
                     @endforeach

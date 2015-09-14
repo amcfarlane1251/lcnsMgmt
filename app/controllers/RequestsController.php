@@ -9,6 +9,7 @@ use Lang;
 use License;
 use Redirect;
 use Requests as Request;
+use Response;
 use Sentry;
 use Validator;
 use View;
@@ -228,6 +229,7 @@ class RequestsController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
+
 		$request = Request::find($id);
 		
 		//return resouse not found if there is no request
@@ -237,14 +239,23 @@ class RequestsController extends \BaseController {
 		}
 
 		//delete request and any records in pivot table
-		$request->licenseTypes()->detach();
-		$request->delete();
+		//$request->licenseTypes()->detach();
+		//$request->forceDelete();
 
-		// Prepare the success message
-        $success = Lang::get('request/message.success.delete');
+		if($this->httpRequest->ajax())
+		{
+			return Response::json(array('error' => false, 'message' => Lang::get('request.message.success.delete')), 200);
+		}
+		else
+		{
+			// Prepare the success message
+	        $success = Lang::get('request/message.success.delete');
 
-        // Redirect to the request management page
-        return Redirect::to('request');
+	        // Redirect to the request management page
+	        $user = Sentry::getUser();
+
+	        return Redirect::to("role/{$user->role->id}/request")->with('success', Lang::get('request.message.success.delete'));
+		}
 	}
 
 	/**

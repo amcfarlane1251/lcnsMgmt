@@ -18,4 +18,10 @@ return array(
     'types'                     => 'License Types',
     'user'  					=> 'User',
     'view'  					=> 'View License',
+
+    'Army' => 'Army Licenses',
+    'Navy' => 'Navy Licenses',
+    'MPG LSC' => 'MPG LCS Licenses',
+    'Navy LSC' => 'Navy LCS Licenses',
+    'RCAF' => 'RCAF Licenses',
 );

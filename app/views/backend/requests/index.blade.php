@@ -32,7 +32,7 @@
 			</thead>
 			<tbody>
 				@foreach($requests as $request)
-					<tr>
+					<tr id="request-{{$request->id}}">
 						<td>{{ $request->owner->first_name ." ".$request->owner->last_name}}</td>
 						<td>{{ $request->pc_name }}</td>
 						<td><a href="{{ URL::to('request?roleId='.$request->role_id) }}"/> {{ $request->roles->role }} </a></td>
@@ -47,10 +47,14 @@
 						</td>
 						<td>{{ $request->created_at }}</td>
 						<td>
-						@if($user->hasAccess('admin') || $user->id == $request->user_id)
-							<a href="{{URL::to('request/'.$request->id.'/edit')}}"><i class="fa fa-pencil icon-white"></i></a>@endif
+						@if($user->hasAccess('admin') || $user->role->id == $request->role_id)
+							<a class="action-link" href="{{URL::to('request/'.$request->id.'/edit')}}"><i class="fa fa-pencil icon-white"></i></a>
+							<a id="{{$request->id}}" class="action-link delete-request" href="{{ URL::to('request/'.$request->id)}}">
+								<i class="fa fa-trash icon-red"></i>
+							</a>
+						@endif
 						@if($user->hasAccess('admin'))
-							<a href="{{ URL::to('request/'.$request->id.'/approve') }}"><i class="fa fa-check icon-white"></i></a>
+							<a class = "action-link" href="{{ URL::to('request/'.$request->id.'/approve') }}"><i class="fa fa-check icon-white"></i></a>
 						@endif
 						</td>
 					</tr>
@@ -61,6 +65,33 @@
 
 	<script>
 
+		// event handler for deleting a request
+		$('.delete-request').click(function(e){
+			e.preventDefault() ? e.preventDefault() : e.returnValue = false;
+			var reqId = $(this).attr('id');
+			var url = $(this).attr('href');
+
+			$.ajax({
+				url:url,
+				type:'DELETE',
+				dataType:'json',
+				success:function(data){
+					if(!data.error)
+					{
+						var row = $('tr#request-'+reqId);
+						row.find('td').css('background-color', 'transparent');
+						
+						row.addClass('delete-highlight');
+						row.fadeOut('slow');
+					}
+				},
+				error:function(response){
+					//
+				}
+			});
+		});
+
+		// event handler for switching between open/closed req's
 		$('#request-status').click(function(e){
 			e.preventDefault() ? e.preventDefault() : e.returnValue = false;
 			var urlArr = $(this).attr('href').split('?');
@@ -95,7 +126,7 @@
 				$('.page-header h3').text('Open Requests');
 				$(this).text('Closed Requests');
 			}
-			console.log(url);
+
 			$.ajax({
 				type:'GET',
 				url:url,
@@ -103,9 +134,10 @@
 				success:function(response, status, xhr){
 					var table = $('table#requests tbody');
 					table.empty();
-
-					for(var i=0;i<response.length;i++){
-						var obj = response[i];
+					requests = response.requests;
+					for(var i=0;i<requests.length;i++){
+						var obj = requests[i];
+						console.log(obj['actions']);
 						//format the license names
 						obj['lcnsNames'] = '';
 						for(x=0;x<obj['lcnsTypes'].length;x++){
@@ -113,23 +145,24 @@
 							(x == (obj['lcnsTypes'].length -1) ? '' : obj['lcnsNames'] += ', ' );
 						}
 
-						table.append(
-							"<tr>"+
+						var tableRow = "<tr>"+
 								"<td>"+obj['requester']+"</td>"+
 								"<td>"+obj['pc_name']+"</td>"+
 								"<td>"+obj['role']+"</td>"+
 								"<td>"+obj['lcnsNames']+"</td>"+
-								"<td>"+obj['created_at']+"</td>"+
-								"<td>"+(obj['actions'] ? obj['actions'] : "")+"</td>"+
-							"</tr>"
-						);
+								"<td>"+obj['created_at']+"</td>";
+						if(response.roleId == obj['role_id'] || response.roleId == 1)
+						{
+							tableRow += "<td>"+(obj['actions'] ? obj['actions'] : "")+"</td>";
+						}
+						tableRow +="</tr>";
+						table.append(tableRow);
 					}
 				},
 				error:function(response){
-					console.log(response);
+					//
 				}
 			});
-
 		});
 	</script>
 @stop

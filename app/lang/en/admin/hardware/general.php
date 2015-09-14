@@ -18,4 +18,10 @@ return array(
     'undeployable'  			=> 'Undeployable',
     'view'  					=> 'View Asset',
     'all'                       => 'All Assets',
+
+    'Army' => 'Army Assets',
+    'Navy' => 'Navy Assets',
+    'MPG LSC' => 'MPG LCS Assets',
+    'Navy LSC' => 'Navy LCS Assets',
+    'RCAF' => 'RCAF Assets',
 );

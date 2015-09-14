@@ -15,6 +15,10 @@ return array(
 	'requestedLcns' => 'Requested License(s)',
 
 	'Army' => 'Army Requests',
+	'Navy' => 'Navy Requests',
+	'MPG LSC' => 'MPG LCS Requests',
+	'Navy LSC' => 'Navy LCS Requests',
+	'RCAF' => 'RCAF Requests',
 
 
 	'message.success.create' => 'Your request has been submitted',
