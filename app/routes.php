@@ -121,22 +121,23 @@ Route::group(array('prefix' => 'hardware', 'namespace' => 'Controllers\Admin', '
 
 
 });
-/*
-|------------------
-| Requestor Routes
-|------------------
-|
-| Register all the requestor routes
-|
-*/
 
+//Custom Routes
+/*
+ * Role Routes
+ *
+ **/
 Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
-    Route::get('role/{id}/request', 'RolesController@indexRequests');
+    //Route::get('role/{id}/request', 'RolesController@indexRequests');
     Route::get('role/{id}/asset', 'RolesController@indexAssets');
     Route::get('role/{id}/license', 'RolesController@indexLicenses');
     Route::resource('role', 'RolesController');
 });
-//Request Routes
+
+/*
+ * Request Routes
+ *
+ **/
 Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
     Route::get('request/{id}/approve', 'RequestsController@edit');
     Route::post('request/{id}/approve', 'RequestsController@approve');
@@ -145,20 +146,20 @@ Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), 
 
 Route::post('request/{id}/approve', array('uses' => 'Controllers\RequestsController@approve', 'before' => 'admin-auth'));
 
-//Hardware Routes
-Route::group(array('prefix' => 'hardware', 'before' => 'requestor-auth'), function(){
-    Route::get('/{id}', 'Controllers\Admin\AssetsController@show');
+/*
+ * Asset Routes
+ *
+ **/
+Route::group(array('prefix' => 'asset', 'before' => 'requestor-auth'), function(){
+    Route::resource('', 'Controllers\Admin\AssetsController');
 });
 
-Route::get('hardware/ec/{id}', array(
-        'before' => 'requestor-auth',
-        'uses' => 'Controllers\Admin\AssetsController@getIndexByEc'
-        )
-);
-
-//License Routes
-Route::group(array('prefix' => 'license', 'before' => 'requestor-auth'), function(){
-    Route::get('/ec/{id}', 'Controllers\Admin\LicensesController@getIndexByEc');
+/*
+ * License Routes
+ *
+ **/
+Route::group(array('prefix' => 'licenses', 'before' => 'requestor-auth'), function(){
+    Route::resource('', 'Controllers\Admin\LicensesController');
 });
 
 /*

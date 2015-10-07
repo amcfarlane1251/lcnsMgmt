@@ -38,6 +38,62 @@ class AssetsController extends AdminController
 
     protected $qrCodeDimensions = array( 'height' => 3.5, 'width' => 3.5);
 
+
+    /**
+     * Display a listing of assets.
+     *
+     * @return Response
+     */
+    public function index()
+    {
+        //get user role
+        $user = Sentry::getUser();
+        $role = $user->role;
+
+        //get role id
+        (Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = '');
+
+        if($role->role != 'All' && $role->id != $roleId) {
+            return Redirect::to('/')->with('error', 'Cannot access that EC');
+        }
+        
+        //get the assets
+        $assets = Asset::where('role_id', $roleId)->get();
+
+        foreach($assets as $key => $asset){
+            $assets[$key]->role = $asset->roles->role;
+            $assets[$key]->status = $asset->assetstatus->name;
+            ($assets[$key]->rtd_location_id ? $assets[$key]->location = $asset->defaultLoc->name : $assets[$key]->location = '');
+            
+            if($user->hasAccess('admin'))
+            {
+                if (($assets[$key]->assigned_to !='') && ($assets[$key]->assigned_to > 0))
+                {
+                    $assets[$key]->inOut = '<a href="'.route('checkin/hardware', $assets[$key]->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
+                } 
+                else 
+                {
+                    $assets[$key]->inOut = '<a href="'.route('checkout/hardware', $assets[$key]->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
+                }
+
+                if ($assets[$key]->deleted_at=='')
+                {
+                    $assets[$key]->actions = '<a href="'.route('update/hardware', $assets[$key]->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a>';
+                    $assets[$key]->actions .= ' <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $assets[$key]->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($assets[$key]->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
+                }
+            }
+        }
+
+        if ($this->request->ajax()){
+            header('Content-Type: application/json');
+            echo json_encode($assets);
+        }
+        else{
+            $heading = Lang::get('admin/hardware/general.all') . " - ".$user->role->role;
+            return View::make('backend/hardware/listing')->with('heading', $heading)->with('assets', $assets);
+        }
+    }
+
     /**
      * Show a list of all the assets.
      *

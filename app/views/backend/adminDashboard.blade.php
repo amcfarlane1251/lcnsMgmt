@@ -20,7 +20,7 @@
     <div class="row stats-row">
         <div class="col-md-3 col-sm-3 stat">
             <div class="data">
-                <a href="{{ URL::to('role/'.$userRoleId.'/request') }}">
+                <a href="{{ URL::to('request') }}">
                     <span class="number">{{ number_format(Requests::openReqCount()) }}</span>
                     <span style="color:black">@lang('request.open')</span>
                 </a>
@@ -28,7 +28,7 @@
         </div>
         <div class="col-md-3 col-sm-3 stat last">
             <div class="data">
-                <a href="{{ URL::to('role/'.$userRoleId.'/request?reqCode=closed') }}">
+                <a href="{{ URL::to('request?reqCode=closed') }}">
                     <span class="number">{{ number_format(Requests::closedReqCount()) }}</span>
                     <span style="color:black">@lang('request.closed')</span>
                 </a>

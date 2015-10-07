@@ -33,35 +33,33 @@ class RequestsController extends \BaseController {
     );
 
  	/**
-	 * Display a listing of the resource.
+	 * Display a listing of requests.
 	 *
 	 * @return Response
 	 */
-	public function index($reqCode = null)
+	public function index()
 	{
+		//get user role
 		$user = Sentry::getUser();
-		
-		$role = $user->role->role;
-		if($role == 'All' && Input::get('roleId'))
-		{
-			$role = Input::get('roleId');
-		}
-		elseif($role != 'All')
-		{
-			$role = $user->role_id;
-		}
-		
-		$reqCode == null ? $reqCode = '' : '';
+		$role = $user->role;
 
-		if( $role == 'All')
-		{
+		//get request code
+		(Input::get('reqCode') ? $reqCode = Input::get('reqCode') : $reqCode = '');
+		//get role id
+		(Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = '');
+
+		if($role->role != 'All' && $role->id != $roleId) {
+			return Redirect::to('/')->with('error', 'Cannot access that EC');
+		}
+
+		if($roleId) {
+			$requests = Request::where('request_code',$reqCode)->where('role_id', $roleId)->orderBy('created_at','desc')->get();
+		}
+		else{
 			$requests = Request::where('request_code',$reqCode)->orderBy('created_at','desc')->get();
 		}
-		else
-		{
-			$requests = Request::where('request_code',$reqCode)->where('role_id', $role)->orderBy('created_at','desc')->get();
-		}
 
+		//ajax request so return json
 		if($this->httpRequest->ajax()){
 			foreach($requests as $key => $request){
 				$requests[$key]->requester = $request->owner->first_name." ".$request->owner->last_name;
@@ -69,7 +67,7 @@ class RequestsController extends \BaseController {
 				$requests[$key]->lcnsTypes =  $request->licenseTypes;
 
 				if($requests[$key]->request_code != 'closed'){
-					if($user->hasAccess('admin') || $user->id == $requests[$key]->user_id){
+					if($user->hasAccess('admin') || $user->role->id == $requests[$key]->role_id){
 						$requests[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
 					}
 					if($user->hasAccess('admin')){
@@ -79,12 +77,13 @@ class RequestsController extends \BaseController {
 			}
 
 			header('Content-type: application/json');
-			echo json_encode($requests);
+			return Response::json(array('requests'=>$requests, 'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id), 200);
 		}
+		//return View
 		else{
 			//html request
-			return View::make('backend.requests.index')->with('requests', $requests)->with('user', $user);
-		}
+			return View::make('backend.requests.index')->with('requests', $requests)->with('user', $user)->with('roleId', $roleId);
+		}		
 	}
 
 	/**

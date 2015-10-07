@@ -11,12 +11,12 @@
 	<div class="page-header">
         <div class="pull-right">
         	@if(Request::is('request?reqCode=closed'))
-	            <a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('role/'.$roleId.'/request') }}">@lang('request.open')</a>
+	            <a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('request?roleId='.$roleId) }}">@lang('request.open')</a>
         	@else
-        		<a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('role/'.$roleId.'/request?reqCode=closed') }}">@lang('request.closed')</a>
+        		<a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('request?reqCode=closed&roleId='.$roleId) }}">@lang('request.closed')</a>
         	@endif
         </div>
-        <h3> @if(Request::is('request')) @lang('request.closed') @else @lang('request.open') @endif </h3>
+        <h3> @if(Request::is('request?reqCode=closed')) @lang('request.open') @else @lang('request.open') @endif </h3>
 	</div>
 
 		<table class="table table-striped table-hover" id="requests">
@@ -94,13 +94,16 @@
 		// event handler for switching between open/closed req's
 		$('#request-status').click(function(e){
 			e.preventDefault() ? e.preventDefault() : e.returnValue = false;
+
 			var urlArr = $(this).attr('href').split('?');
 			if(urlArr[1]){
 				var query = urlArr[1].split('=');
 				reqCode = query[1];
+				roleId = query[2]
 			}
 			else{
 				reqCode = '';
+				roleId = query[2]
 			}
 
 			//seperate uri segments into array
@@ -114,7 +117,7 @@
 				//get the url for use in the ajax request 
 				url = $(this).attr('href');
 
-				$(this).attr('href', baseUri+"/request");
+				$(this).attr('href', baseUri+"/request?roleId="+roleId);
 				$('.page-header h3').text('Closed Requests');
 				$(this).text('Open Requests');
 			}
@@ -122,7 +125,7 @@
 			else{
 				url = $(this).attr('href');
 
-				$(this).attr('href', baseUri+"/request?reqCode=closed");
+				$(this).attr('href', baseUri+"/request?reqCode=closed&roleId="+roleId);
 				$('.page-header h3').text('Open Requests');
 				$(this).text('Closed Requests');
 			}

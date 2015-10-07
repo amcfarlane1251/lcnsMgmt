@@ -267,7 +267,7 @@
                         <li class="divider">&nbsp;</li>
                         @if(Sentry::getUser()->hasAccess('admin'))
                             <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                                <a href="{{ URL::to('role/'.$user->role->id.'/request') }}">
+                                <a href="{{ URL::to('request') }}">
                                     @lang('request.viewAll')
                                 </a>
                             </li>
@@ -275,7 +275,7 @@
                         @foreach($roles as $key => $value)
                             @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
                                 <li>
-                                    <a href="{{ URL::to('role/'.$key.'/request') }}">
+                                    <a href="{{ URL::to('request?roleId='.$key) }}">
                                         @lang('request.'.$value)
                                     </a>
                                 </li>
@@ -302,7 +302,7 @@
                     @foreach($roles as $key => $value)
                         @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
                             <li>
-                                <a href="{{ URL::to('role/'.$key.'/asset') }}">
+                                <a href="{{ URL::to('asset?roleId='.$key) }}">
                                     @lang('admin/hardware/general.'.$value)
                                 </a>
                             </li>
@@ -328,7 +328,7 @@
                     @foreach($roles as $key => $value)
                         @if(Sentry::getUser()->role->role == $value || Sentry::getUser()->role->role == "All")
                             <li>
-                                <a href="{{URL::to('role/'.$key.'/license')}}">@lang('admin/licenses/general.'.$value)</a>
+                                <a href="{{URL::to('licenses?roleId='.$key)}}">@lang('admin/licenses/general.'.$value)</a>
                             </li>
                         @endif
                     @endforeach

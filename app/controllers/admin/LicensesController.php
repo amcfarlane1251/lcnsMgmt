@@ -2,6 +2,7 @@
 
 use Assets;
 use AdminController;
+use Illuminate\Http\Request as HttpRequest;
 use Input;
 use Lang;
 use License;
@@ -22,6 +23,7 @@ use Response;
 use Datatable;
 use Slack;
 use Config;
+use Role;
 use Session;
 
 class LicensesController extends AdminController
@@ -32,8 +34,43 @@ class LicensesController extends AdminController
      * @return View
      */
 
+    public function __construct(HttpRequest $request)
+    {
+        $this->request = $request;
+    }
 
+    /**
+     * Display a list of licenses
+     *
+     */
+    public function index()
+    {
+        //get user role
+        $user = Sentry::getUser();
+        $role = $user->role;
 
+        //get role id
+        (Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = '');
+
+        if($role->role != 'All' && $role->id != $roleId) {
+            return Redirect::to('/')->with('error', 'Cannot access that EC');
+        }
+
+        //get the licenses object and the role key for language files
+        $licenses = License::getByRole($roleId);
+        $roleKey = Role::getRoleById($roleId); $roleKey = $roleKey[0];
+
+        if($this->request->ajax())
+        {
+            header('Content-Type: application/json');
+            echo json_encode($licenses);
+        }
+        else
+        {
+            $heading = Lang::get('admin/licenses/general.all') ." - " .$roleKey;
+            return View::make('backend/licenses/listing')->with('heading', $heading)->with('licenses', $licenses)->with('roleId', $roleId);
+        }
+    }
 
     public function getIndex()
     {
