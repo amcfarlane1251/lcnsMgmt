@@ -154,6 +154,10 @@ Route::group(array('prefix' => 'asset', 'before' => 'requestor-auth'), function(
     Route::resource('', 'Controllers\Admin\AssetsController');
 });
 
+Route::group(array('prefix' => 'hardware', 'before' => 'requestor-auth'), function(){
+    Route::resource('', 'Controllers\Admin\AssetsController');
+});
+
 /*
  * License Routes
  *

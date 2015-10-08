@@ -18,7 +18,11 @@
         </div>
         <h3> @if(Request::is('request?reqCode=closed')) @lang('request.open') @else @lang('request.open') @endif </h3>
 	</div>
-
+	<div class="btn-group" role="group" aria-label="...">
+	 	<button type="button" class="btn btn-default" data-type="license" data-url="{{URL::to('request')}}" data-role="{{$roleId}}">Licenses</button>
+		<button type="button" class="btn btn-default" data-type="account" data-url="{{URL::to('request')}}" data-role="{{$roleId}}">Accounts</button>
+	</div>
+	<div id="requests">
 		<table class="table table-striped table-hover" id="requests">
 			<thead>
 			    <tr>
@@ -64,6 +68,31 @@
 	</div>
 
 	<script>
+		function createTable(table, data, roleId) {
+			for(var i=0;i<data.length;i++){
+				var obj = data[i];
+				console.log(obj['actions']);
+				//format the license names
+				obj['lcnsNames'] = '';
+				for(x=0;x<obj['lcnsTypes'].length;x++){
+					obj['lcnsNames'] += obj['lcnsTypes'][x]['name'];
+					(x == (obj['lcnsTypes'].length -1) ? '' : obj['lcnsNames'] += ', ' );
+				}
+
+				var tableRow = "<tr>"+
+						"<td>"+obj['requester']+"</td>"+
+						"<td>"+obj['pc_name']+"</td>"+
+						"<td>"+obj['role']+"</td>"+
+						"<td>"+obj['lcnsNames']+"</td>"+
+						"<td>"+obj['created_at']+"</td>";
+				if(roleId == obj['role_id'] || roleId == 1)
+				{
+					tableRow += "<td>"+(obj['actions'] ? obj['actions'] : "")+"</td>";
+				}
+				tableRow +="</tr>";
+				table.append(tableRow);
+			}
+		}
 
 		// event handler for deleting a request
 		$('.delete-request').click(function(e){
@@ -91,6 +120,34 @@
 			});
 		});
 
+		// event handler for switching between licenses and accounts
+		$('.btn-group button').click(function(e){
+			e.preventDefault() ? e.preventDefault() : e.returnValue = false;
+			var container = $('#requests table');
+			var url = $(this).data('url');
+			var role = $(this).data('role')
+			var type = $(this).data('type')
+
+			$.ajax({
+				url:url,
+				data:{
+					'roleId':role,
+					'type':type
+				},
+				type:'GET',
+				dataType:'json',
+				success:function(data){
+					console.log(data.requests);
+					container.fadeOut();
+					container.find('thead').empty().append('<tr><td>Requester</td><td>Computer Name</td><td>EC</td><td>Type(s)</td><td>Date Requested</td><td>Actions</td></tr>');
+					container.find('tbody').empty();
+					
+					createTable(container.find('tbody'), data.requests, data.roleId);
+					container.fadeIn();
+				}
+			});
+
+		});
 		// event handler for switching between open/closed req's
 		$('#request-status').click(function(e){
 			e.preventDefault() ? e.preventDefault() : e.returnValue = false;

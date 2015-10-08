@@ -261,8 +261,11 @@
                     </a>
 
                     <ul class="submenu{{ (Request::is('request*') ? ' active' : '') }}">
+                        <li{{ (Request::is('request*') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
+                            <a href="{{ URL::to('request/create?type=license') }}">@lang('request.requestLicense')</a>
+                        </li>
                         <li{{ (Request::is('request') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
-                            <a href="{{ URL::to('request/create') }}">@lang('request.requestLicense')</a>
+                            <a href="{{ URL::to('request/create?type=account') }}">@lang('request.requestAccount')</a>
                         </li>
                         <li class="divider">&nbsp;</li>
                         @if(Sentry::getUser()->hasAccess('admin'))

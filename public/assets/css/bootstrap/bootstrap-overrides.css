@@ -167,7 +167,9 @@ textarea::-webkit-input-placeholder {
   font-family: "Open Sans", Arial;
   font-size: 12px;
 }
-
+.form-control{
+	max-width:350px;
+}
 
 /* PREPEND & APPEND INPUT */
 .input-group input, 

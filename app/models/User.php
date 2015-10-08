@@ -72,6 +72,14 @@ class User extends SentryUserModel
     }
 
     /**
+    * Get request originator for this account
+    **/
+    public function requestOwner()
+    {
+        return $this->belongsTo('Request', 'request_id');
+    }
+
+    /**
     * Get action logs for this user
     */
     public function userlog()
@@ -163,6 +171,13 @@ class User extends SentryUserModel
         else{
             return false;
         }
+    }
+
+    public function createAccount($values) {
+        foreach($values as $key => $value) {
+            $this->$key = $value;
+        }
+        return $this->save();
     }
 
 }

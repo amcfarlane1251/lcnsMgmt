@@ -1,6 +1,7 @@
 <?php
 namespace Controllers;
 
+use Account;
 use Asset;
 use DB;
 use Illuminate\Http\Request as HttpRequest;
@@ -14,6 +15,7 @@ use Sentry;
 use Validator;
 use View;
 use URL;
+use User;
 
 class RequestsController extends \BaseController {
 
@@ -47,16 +49,18 @@ class RequestsController extends \BaseController {
 		(Input::get('reqCode') ? $reqCode = Input::get('reqCode') : $reqCode = '');
 		//get role id
 		(Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = '');
+		//get request type
+		(Input::get('type') ? $type = Input::get('type') : $type = 'license');
 
 		if($role->role != 'All' && $role->id != $roleId) {
 			return Redirect::to('/')->with('error', 'Cannot access that EC');
 		}
 
 		if($roleId) {
-			$requests = Request::where('request_code',$reqCode)->where('role_id', $roleId)->orderBy('created_at','desc')->get();
+			$requests = Request::where('request_code',$reqCode)->where('role_id', $roleId)->where('type', $type)->orderBy('created_at','desc')->get();
 		}
 		else{
-			$requests = Request::where('request_code',$reqCode)->orderBy('created_at','desc')->get();
+			$requests = Request::where('request_code',$reqCode)->where('type', $type)->orderBy('created_at','desc')->get();
 		}
 
 		//ajax request so return json
@@ -82,6 +86,7 @@ class RequestsController extends \BaseController {
 		//return View
 		else{
 			//html request
+			error_log(print_R($requests, true));
 			return View::make('backend.requests.index')->with('requests', $requests)->with('user', $user)->with('roleId', $roleId);
 		}		
 	}
@@ -93,17 +98,32 @@ class RequestsController extends \BaseController {
 	 */
 	public function create()
 	{	
+		//get the request type
+		$type = Input::get('type');
 		//get all the environmental commands
 		$ec = Sentry::getUser()->filterRoles();
 
-		//define array of license types
-        $lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->lists('name', 'id');
+		if($type=='license') {
+			//define array of license types
+	        $lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->lists('name', 'id');
 
-		return View::make('backend/requests/license/edit')
-			->with('request',new Request)
-			->with('ec', $ec)
-			->with('lcnsTypes', $lcnsTypes)
-			->with('isApprover', false);
+			return View::make('backend/requests/license/edit')
+				->with('request',new Request)
+				->with('ec', $ec)
+				->with('lcnsTypes', $lcnsTypes)
+				->with('isApprover', false);
+		}
+		elseif($type=='account') {
+			//define array of employee types
+			$empTypes = DB::table('emp_types')->lists('type', 'id');
+
+			return View::make('backend/requests/accounts/edit')
+				->with('request',new Request)
+				->with('account', new Account)
+				->with('ec', $ec)
+				->with('empTypes', $empTypes)
+				->with('isApprover', false);
+		}
 	}
 
 	/**
@@ -113,38 +133,86 @@ class RequestsController extends \BaseController {
 	 */
 	public function store()
 	{
-		$pcName = Input::get('pcName');
+		$type = Input::get('type');
 		$ec = Input::get('ec');
-		$lcnsTypes = Input::get('lcnsTypes');
+		$fname = Input::get('firstName');
+		$lname = Input::get('lastName');
+		$email = Input::get('email');
+		$empType = Input::get('empType');
+		$empNum = Input::get('empNum');
+		$unitName = Input::get('unitName');
+		$location = Input::get('location');
+		$requesterId = Sentry::getUser()->id;
 
-        // Create a new validator instance from our validation rules
-        $validator = Validator::make(Input::all(), $this->validationRules);
+		if($type=='account') {
+			$request = new Request();
+			$account = new User();
 
-        //TODO: check if request is JSON or HTML content-type
-        if($validator->fails()){
-        	// Ooops.. something went wrong
-            return Redirect::back()->withInput()->withErrors($validator);
-        }
+			$requestValues = array(
+				'role_id' => $ec,
+				'user_id' => $requesterId,
+				'type' => $type,
+			);
 
-        $request = new Request();
-        $request->user_id = Sentry::getUser()->id;
-        $request->pc_name = $pcName;
-        $request->role_id = $ec;
+			$accountValues = array(
+				'role_id' => $ec,
+				'first_name' => $fname,
+				'last_name' => $lname,
+				'password' => 'default',
+				'activated' => 0,
+				'email' => $email,
+				'emp_types_id' => $empType,
+				'emp_num' => $empNum,
+				'unit_name' => $unitName,
+				'location_id' => $location
+			);
 
-        try{
-        	$request->save();
+			try{
+				$request->createForAccount($requestValues);
 
-        	//save the license types to the request
-        	foreach($lcnsTypes as $lcnsType){
-        		$request->licenseTypes()->attach($lcnsType);
-        	}
-        }
-        catch(Exception $e){
-        	echo 'Caught exception: ',  $e->getMessage(), "\n";
-        }
+				$accountValues['request_id'] = $request->id;
+				$account->createAccount($accountValues);
+			}
+			catch(Exception $e) {
+				echo 'Caught exception: ', $e->getMessage(), "\n";
+			}
+			$success = Lang::get('admin/request/message.success.create');
+			return Redirect::to('request/'.$request->id)->with('success', $success);
+		}
 
-        $success = Lang::get('admin/request/message.success.create');
-        return Redirect::to('request/'.$request->id)->with('success', $success);
+		elseif($type=='license') {
+			$pcName = Input::get('pcName');
+			$lcnsTypes = Input::get('lcnsTypes');
+
+	        // Create a new validator instance from our validation rules
+	        $validator = Validator::make(Input::all(), $this->validationRules);
+
+	        //TODO: check if request is JSON or HTML content-type
+	        if($validator->fails()){
+	        	// Ooops.. something went wrong
+	            return Redirect::back()->withInput()->withErrors($validator);
+	        }
+
+	        $request = new Request();
+	        $request->user_id = Sentry::getUser()->id;
+	        $request->pc_name = $pcName;
+	        $request->role_id = $ec;
+
+	        try{
+	        	$request->save();
+
+	        	//save the license types to the request
+	        	foreach($lcnsTypes as $lcnsType){
+	        		$request->licenseTypes()->attach($lcnsType);
+	        	}
+	        }
+	        catch(Exception $e){
+	        	echo 'Caught exception: ',  $e->getMessage(), "\n";
+	        }
+
+	        $success = Lang::get('admin/request/message.success.create');
+	        return Redirect::to('request/'.$request->id)->with('success', $success);
+	    }
 
 	}
 
@@ -165,7 +233,12 @@ class RequestsController extends \BaseController {
 			return Redirect::route('request')->with('error', 'Request not found.');
 		}
 
-		return View::make('backend/requests/view')->with('request', $request);
+		if($request->type=='account') {
+			return View::make('backend/requests/accounts/view')->with('request', $request);
+		}
+		elseif($request->type=='license'){
+			return View::make('backend/requests/view')->with('request', $request);
+		}
 	}
 
 

@@ -21,16 +21,16 @@
         <div class="col-md-3 col-sm-3 stat">
             <div class="data">
                 <a href="{{ URL::to('request') }}">
-                    <span class="number">{{ number_format(Requests::openReqCount()) }}</span>
-                    <span style="color:black">@lang('request.open')</span>
+                    <span class="number">{{ number_format(Requests::count('license')) }}</span>
+                    <span style="color:black">@lang('request.licenses')</span>
                 </a>
             </div>
         </div>
         <div class="col-md-3 col-sm-3 stat last">
             <div class="data">
-                <a href="{{ URL::to('request?reqCode=closed') }}">
-                    <span class="number">{{ number_format(Requests::closedReqCount()) }}</span>
-                    <span style="color:black">@lang('request.closed')</span>
+                <a href="{{ URL::to('request?type=account') }}">
+                    <span class="number">{{ number_format(Requests::count('account')) }}</span>
+                    <span style="color:black">@lang('request.accounts')</span>
                 </a>
             </div>
         </div>

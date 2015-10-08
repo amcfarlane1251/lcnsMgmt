@@ -8,9 +8,12 @@ return array(
 	'all' => 'All Active Requests',
 	'viewAll' => 'View All Requests',
 	'requestLicense' => 'Request a License',
+	'requestAccount' => 'Request an Account',
 	'approveLicense' => 'Approve License',
 	'open' => 'Open Requests',
 	'closed' => 'Closed Requests',
+	'licenses' => 'License Requests',
+	'accounts' => 'Account Requests',
 	'details' => 'Details',
 	'requestedLcns' => 'Requested License(s)',
 
