@@ -52,6 +52,7 @@
         <script src="{{ asset('assets/js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('assets/js/dataTables.colVis.js') }}"></script>
         <script src="{{ asset('assets/js/dataTables.tableTools.js') }}"></script>
+        <script src="{{ asset('assets/js/Requests.js') }}"></script>
 
         <script>
             window.snipeit = {

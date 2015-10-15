@@ -69,6 +69,9 @@ class RequestsController extends \BaseController {
 				$requests[$key]->requester = $request->owner->first_name." ".$request->owner->last_name;
 				$requests[$key]->role = $request->roles->role;
 				$requests[$key]->lcnsTypes =  $request->licenseTypes;
+				if($type=='account') {
+					$requests[$key]->name = $request->account->first_name." ".$request->account->last_name;
+				}
 
 				if($requests[$key]->request_code != 'closed'){
 					if($user->hasAccess('admin') || $user->role->id == $requests[$key]->role_id){
@@ -81,13 +84,13 @@ class RequestsController extends \BaseController {
 			}
 
 			header('Content-type: application/json');
-			return Response::json(array('requests'=>$requests, 'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id), 200);
+			//return Response::json(array('requests'=>$requests, 'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id), 200);
+			echo json_encode(array('requests'=>$requests, 'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id));
 		}
 		//return View
 		else{
 			//html request
-			error_log(print_R($requests, true));
-			return View::make('backend.requests.index')->with('requests', $requests)->with('user', $user)->with('roleId', $roleId);
+			return View::make('backend.requests.index')->with('requests', $requests)->with('user', $user)->with('roleId', $roleId)->with('type', $type);
 		}		
 	}
 
