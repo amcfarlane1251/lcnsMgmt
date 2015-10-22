@@ -8,6 +8,7 @@ use Illuminate\Http\Request as HttpRequest;
 use Input;
 use Lang;
 use License;
+use LicenseType;
 use Redirect;
 use Requests as Request;
 use Response;
@@ -45,11 +46,9 @@ class RequestsController extends \BaseController {
 		$user = Sentry::getUser();
 		$role = $user->role;
 
-		//get request code
+		//get URL params
 		(Input::get('reqCode') ? $reqCode = Input::get('reqCode') : $reqCode = '');
-		//get role id
 		(Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = '');
-		//get request type
 		(Input::get('type') ? $type = Input::get('type') : $type = 'license');
 
 		if($role->role != 'All' && $role->id != $roleId) {
@@ -103,8 +102,10 @@ class RequestsController extends \BaseController {
 	{	
 		//get the request type
 		$type = Input::get('type');
+		if(!$type){$type='license';}
 		//get all the environmental commands
 		$ec = Sentry::getUser()->filterRoles();
+		$unit = Sentry::getUser()->filterUnits();
 
 		if($type=='license') {
 			//define array of license types
@@ -113,7 +114,9 @@ class RequestsController extends \BaseController {
 			return View::make('backend/requests/license/edit')
 				->with('request',new Request)
 				->with('ec', $ec)
+				->with('units', $unit)
 				->with('lcnsTypes', $lcnsTypes)
+				->with('type',$type)
 				->with('isApprover', false);
 		}
 		elseif($type=='account') {
@@ -124,6 +127,7 @@ class RequestsController extends \BaseController {
 				->with('request',new Request)
 				->with('account', new Account)
 				->with('ec', $ec)
+				->with('units', $unit)
 				->with('empTypes', $empTypes)
 				->with('isApprover', false);
 		}
@@ -136,18 +140,31 @@ class RequestsController extends \BaseController {
 	 */
 	public function store()
 	{
+		// Create a new validator instance from our validation rules
+        $validator = Validator::make(Input::all(), $this->validationRules);
+
+        //TODO: check if request is JSON or HTML content-type
+        if($validator->fails()){
+        	// Ooops.. something went wrong
+            return Redirect::back()->withInput()->withErrors($validator);
+        }
+
+		//get common variables
 		$type = Input::get('type');
+		$unit = Input::get('unit');
 		$ec = Input::get('ec');
-		$fname = Input::get('firstName');
-		$lname = Input::get('lastName');
-		$email = Input::get('email');
-		$empType = Input::get('empType');
-		$empNum = Input::get('empNum');
-		$unitName = Input::get('unitName');
-		$location = Input::get('location');
 		$requesterId = Sentry::getUser()->id;
+		$fname = Input::get('fname');
+		$lname = Input::get('lname');
+		$username = Input::get('username');
 
 		if($type=='account') {
+			//account variables
+			$email = Input::get('email');
+			$empType = Input::get('empType');
+			$empNum = Input::get('empNum');
+			$location = Input::get('location');
+			
 			$request = new Request();
 			$account = new User();
 
@@ -165,8 +182,7 @@ class RequestsController extends \BaseController {
 				'activated' => 0,
 				'email' => $email,
 				'emp_types_id' => $empType,
-				'emp_num' => $empNum,
-				'unit_name' => $unitName,
+				'employee_num' => $empNum,
 				'location_id' => $location
 			);
 
@@ -187,38 +203,42 @@ class RequestsController extends \BaseController {
 			$pcName = Input::get('pcName');
 			$lcnsTypes = Input::get('lcnsTypes');
 
-	        // Create a new validator instance from our validation rules
-	        $validator = Validator::make(Input::all(), $this->validationRules);
-
-	        //TODO: check if request is JSON or HTML content-type
-	        if($validator->fails()){
-	        	// Ooops.. something went wrong
-	            return Redirect::back()->withInput()->withErrors($validator);
-	        }
-
 	        $request = new Request();
-	        $request->user_id = Sentry::getUser()->id;
-	        $request->pc_name = $pcName;
-	        $request->role_id = $ec;
+	        //fill request obj with common fields
+	        $reqParams = array(
+	        	'user_id'=>Sentry::getUser()->id,
+	        	'unit_id'=>$unit,
+	        	'role_id'=>$ec,
+	        	'type'=>$type,
+	        );
+	        //fill account obj with common fields
+	        $accountParams = array(
+	        	'first_name'=> $fname,
+	        	'last_name'=>$lname,
+	        	'username'=>$username,
+	        );
 
-	        try{
-	        	$request->save();
-
-	        	//save the license types to the request
-	        	foreach($lcnsTypes as $lcnsType){
-	        		$request->licenseTypes()->attach($lcnsType);
+	        foreach($lcnsTypes as $typeId) {
+	        	if(LicenseType::find($typeId)->name =='SABA Publisher'){
+	        		$reqParams['pc_name'] = $pcName;
 	        	}
 	        }
-	        catch(Exception $e){
-	        	echo 'Caught exception: ',  $e->getMessage(), "\n";
-	        }
+
+ 			$account = new Account();
+    		$account->store($accountParams);
+
+    		$reqParams['account_id'] = $account->id;
+    		$request->store($reqParams);
+
+			//save the license types to the request
+        	foreach($lcnsTypes as $lcnsType){
+        		$request->licenseTypes()->attach($lcnsType);
+        	}
 
 	        $success = Lang::get('admin/request/message.success.create');
 	        return Redirect::to('request/'.$request->id)->with('success', $success);
 	    }
-
 	}
-
 
 	/**
 	 * Display the specified resource.

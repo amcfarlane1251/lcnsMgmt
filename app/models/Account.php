@@ -2,17 +2,11 @@
 class Account extends Elegant
 {
 
-	protected $table = 'users';
+	protected $table = 'accounts';
 
-	public function owner() {
-		return $this->belongsTo('Request', 'request_id');
-	}
+	public $timestamps = false;
 
-	public function role() {
-		return $this->belongsTo('Role', 'role_id');
-	}
-
-	public function createAccount($values) {
+	public function store($values) {
 		foreach($values as $key => $value) {
 			$this->$key = $value;
 		}

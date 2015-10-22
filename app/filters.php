@@ -103,6 +103,25 @@ Route::filter('admin-auth', function () {
 */
 
 Route::filter('requestor-auth', function () {
+    // Check if the user is logged in
+    if ( ! Sentry::check()) {
+        // Store the current uri in the session
+        Session::put('loginRedirect', Request::url());
+
+        // Redirect to the login page
+        return Redirect::route('signin');
+    }
+
+    // Check if the user has access to the admin pages
+    if ( ! Sentry::getUser()->hasAccess('request') ) {
+        if( ! Sentry::getUser()->hasAccess('authorize') ){
+            // Show the insufficient permissions page
+            return Redirect::route('view-assets');
+        }
+    }
+});
+
+Route::filter('authorizer-auth', function() {
      // Check if the user is logged in
     if ( ! Sentry::check()) {
         // Store the current uri in the session
@@ -113,7 +132,7 @@ Route::filter('requestor-auth', function () {
     }
 
     // Check if the user has access to the admin pages
-    if ( ! Sentry::getUser()->hasAccess('request')) {
+    if ( ! Sentry::getUser()->hasAccess('authorize')) {
         // Show the insufficient permissions page
         return Redirect::route('view-assets');
     }
@@ -164,3 +183,15 @@ Route::filter('csrf', function () {
         throw new Illuminate\Session\TokenMismatchException;
     }
 });
+
+function loginCheck()
+{
+    // Check if the user is logged in
+    if ( ! Sentry::check()) {
+        // Store the current uri in the session
+        Session::put('loginRedirect', Request::url());
+
+        // Return false
+        return false;
+    }
+}

@@ -13,7 +13,7 @@ class Requests extends Elegant
 	}
 
 	public function account() {
-		return $this->belongsTo('User', 'id', 'request_id');
+		return $this->belongsTo('User', 'account_id', 'id');
 	}
 
 	public function licenseTypes(){
@@ -40,5 +40,19 @@ class Requests extends Elegant
 			$this->$key = $value;
 		}
 		return $this->save();
+	}
+
+	public function store($values)
+	{
+		foreach($values as $key=>$value){
+			$this->$key = $value;
+		}
+
+		try{
+			$this->save();
+		}
+		catch(Exception $e){
+    		echo 'Caught exception: ',  $e->getMessage(), "\n";
+    	}
 	}
 }

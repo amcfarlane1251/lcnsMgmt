@@ -53,6 +53,7 @@
         <script src="{{ asset('assets/js/dataTables.colVis.js') }}"></script>
         <script src="{{ asset('assets/js/dataTables.tableTools.js') }}"></script>
         <script src="{{ asset('assets/js/Requests.js') }}"></script>
+        <script src="{{ asset('assets/js/ToggleHelper.js') }}"></script>
 
         <script>
             window.snipeit = {
@@ -250,7 +251,7 @@
     <div id="sidebar-nav">
         <ul id="dashboard-menu">
 
-            @if(Sentry::getUser()->hasAccess('request'))
+            @if(Sentry::getUser()->hasAccess('request') || Sentry::getUser()->hasAccess('authorize'))
                 <li{{ (Request::is('*/') ? ' class="active"><div class="pointer"><div class="arrow"></div><div class="arrow_border"></div></div>' : '>') }}
                     <a href="{{ URL::to('/'); }}"><i class="fa fa-dashboard"></i><span>Dashboard</span></a>
                 </li>

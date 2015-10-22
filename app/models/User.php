@@ -24,7 +24,6 @@ class User extends SentryUserModel
         return "{$this->first_name} {$this->last_name}";
     }
     
-
     /**
      * Returns the user Gravatar image url.
      *
@@ -164,6 +163,20 @@ class User extends SentryUserModel
         return $ec;
     }
 
+    public function filterUnits()
+    {
+        if($this->hasAccess('admin')){
+            $units = Unit::lists('name','id');
+        }
+        elseif($this->hasAccess('authorize')){
+            $units = Unit::where('role_id','=',$this->role_id)->lists('name','id');
+        }
+        elseif($this->hasAccess('request')){
+            $units = Unit::where('id','=',$this->unit_id)->lists('name','id');
+        }
+        return $units;
+    }
+
     public function sysAdmin(){
         if ($this->role->role == 'All'){
             return true;
@@ -173,7 +186,7 @@ class User extends SentryUserModel
         }
     }
 
-    public function createAccount($values) {
+    public function store($values) {
         foreach($values as $key => $value) {
             $this->$key = $value;
         }
