@@ -60,29 +60,6 @@ Requests.prototype.toggleTypes = function(e)
 
 Requests.prototype.populateTable = function(data)
 {
-	//that.populateTableHeader(data);
-	that.populateTableBody(data);
-}
-
-Requests.prototype.clearTable = function()
-{
-	that.table.fadeOut();
-	that.table.find('tbody').empty();
-}
-
-Requests.prototype.populateTableHeader = function(data)
-{	
-	that.tableRow = "<tr>";
-	for(var key in data.header){
-		that.tableRow += "<td>"+data.header[key]+"</td>";
-	}
-	that.tableRow += "</tr>";
-
-	that.table.find('thead').empty().append(that.tableRow);
-}
-
-Requests.prototype.populateTableBody = function(data)
-{
 	var requests = data.requests;
 	var roleId = data.roleId; 
 
@@ -116,6 +93,12 @@ Requests.prototype.populateTableBody = function(data)
 	}
 
 	that.table.fadeIn();
+}
+
+Requests.prototype.clearTable = function()
+{
+	that.table.fadeOut();
+	that.table.find('tbody').empty();
 }
 
 Requests.prototype.delete = function(e)
