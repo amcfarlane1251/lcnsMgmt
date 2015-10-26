@@ -116,6 +116,7 @@ return array(
     'total_licenses'		=> 'total licenses',
     'type'  				=> 'Type',
     'undeployable'			=> 'Un-deployable',
+    'unit'                  => 'Unit',
     'unknown_admin'			=> 'Unknown Admin',
     'uploaded'              => 'Uploaded',
     'user'					=> 'User',

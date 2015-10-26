@@ -4,6 +4,7 @@ namespace Controllers;
 use Account;
 use Asset;
 use DB;
+use Form;
 use Illuminate\Http\Request as HttpRequest;
 use Input;
 use Lang;
@@ -30,7 +31,6 @@ class RequestsController extends \BaseController {
      * @var array
      */
     protected $validationRules = array(
-    	'pcName'	=> 'required',
         'ec'       => 'required',
         'lcnsTypes'        => 'required',
     );
@@ -64,27 +64,35 @@ class RequestsController extends \BaseController {
 
 		//ajax request so return json
 		if($this->httpRequest->ajax()){
+			//make table headers
+			$header = array(Lang::get('request.requester'), Lang::get('general.unit'), Lang::get('general.ec'), Lang::get('request.for'),
+							Lang::get('licenses.general.type'), Lang::get('request.dateReq'), Lang::get('general.actions'));
+
+			$return = array();
 			foreach($requests as $key => $request){
-				$requests[$key]->requester = $request->owner->first_name." ".$request->owner->last_name;
-				$requests[$key]->role = $request->roles->role;
-				$requests[$key]->lcnsTypes =  $request->licenseTypes;
-				if($type=='account') {
-					$requests[$key]->name = $request->account->first_name." ".$request->account->last_name;
-				}
+				$return[$key] = new \stdClass();
+				$return[$key]->id = $request->id;
+				$return[$key]->requester = $request->owner->first_name." ".$request->owner->last_name;
+				$return[$key]->unit = $request->unit->name;
+				$return[$key]->role = $request->roles->role;
+				$request->account ? $return[$key]->name = $request->account->first_name." ".$request->account->last_name : $return[$key]->name = '';
+				$return[$key]->lcnsTypes =  $request->licenseTypes;
+				$return[$key]->created_at = (string)$request->created_at;
 
 				if($requests[$key]->request_code != 'closed'){
 					if($user->hasAccess('admin') || $user->role->id == $requests[$key]->role_id){
-						$requests[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
+						$return[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
+						$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='delete-request'><i class='fa fa-trash icon-white'></i></a>";
 					}
 					if($user->hasAccess('admin')){
-						$requests[$key]->actions .= "<a href=" .URL::to('request/'.$request->id.'/approve'). "><i class='fa fa-check icon-white'></i></a>";
+						$return[$key]->actions .= "<a href=" .URL::to('request/'.$request->id.'/approve'). "><i class='fa fa-check icon-blue'></i></a>";
 					}
 				}
 			}
 
 			header('Content-type: application/json');
 			//return Response::json(array('requests'=>$requests, 'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id), 200);
-			echo json_encode(array('requests'=>$requests, 'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id));
+			echo json_encode(array('requests'=>$return, 'header'=> $header,'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id));
 		}
 		//return View
 		else{
@@ -228,7 +236,9 @@ class RequestsController extends \BaseController {
     		$account->store($accountParams);
 
     		$reqParams['account_id'] = $account->id;
-    		$request->store($reqParams);
+    		
+    		$account->created_from = $request->store($reqParams);
+    		$account->save();
 
 			//save the license types to the request
         	foreach($lcnsTypes as $lcnsType){
@@ -324,7 +334,6 @@ class RequestsController extends \BaseController {
 	 */
 	public function destroy($id)
 	{
-
 		$request = Request::find($id);
 		
 		//return resouse not found if there is no request
@@ -332,10 +341,15 @@ class RequestsController extends \BaseController {
 			header(' ', true, 404);
 			return Redirect::route('request')->with('error', 'Request not found.');
 		}
-
+		error_log(print_R($request, true));
 		//delete request and any records in pivot table
-		//$request->licenseTypes()->detach();
-		//$request->forceDelete();
+		try{
+			$request->deletePrep();
+			$request->delete();
+		}
+		catch(Exception $e){
+			echo "Caught Exception: ", $e->getMessage(), "\n";
+		}
 
 		if($this->httpRequest->ajax())
 		{

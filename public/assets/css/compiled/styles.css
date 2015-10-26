@@ -6,4 +6,15 @@
 .delete-highlight {
   background: #e74c3c; }
 
+td.actions a ~ a, td.actions form {
+  margin: 0 .667rem; }
+
+form.table-form {
+  display: inline-block; }
+  form.table-form button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: #428bca; }
+
 /*# sourceMappingURL=styles.css.map */

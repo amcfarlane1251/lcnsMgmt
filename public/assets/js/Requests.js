@@ -12,7 +12,8 @@ Requests.prototype.setProperties = function()
 	this.url = $('.btn-group').data('url');
 	this.role = $('.btn-group').data('role');
 	this.table = $('#requests table');
-	this.deleteBtn = $('.delete-request');
+	this.tableRow = '';
+	this.deleteBtn = '.delete-request';
 	this.toggleBtn = '.btn-group button';
 	
 	that = this;
@@ -59,7 +60,7 @@ Requests.prototype.toggleTypes = function(e)
 
 Requests.prototype.populateTable = function(data)
 {
-	that.populateTableHeader(data);
+	//that.populateTableHeader(data);
 	that.populateTableBody(data);
 }
 
@@ -69,9 +70,15 @@ Requests.prototype.clearTable = function()
 	that.table.find('tbody').empty();
 }
 
-Requests.prototype.populateTableHeader = function()
+Requests.prototype.populateTableHeader = function(data)
 {	
-	that.table.find('thead').empty().append('<tr><td>Requester</td><td>Computer Name</td><td>EC</td><td>Type(s)</td><td>Date Requested</td><td>Actions</td></tr>');
+	that.tableRow = "<tr>";
+	for(var key in data.header){
+		that.tableRow += "<td>"+data.header[key]+"</td>";
+	}
+	that.tableRow += "</tr>";
+
+	that.table.find('thead').empty().append(that.tableRow);
 }
 
 Requests.prototype.populateTableBody = function(data)
@@ -81,24 +88,30 @@ Requests.prototype.populateTableBody = function(data)
 
 	for(var i=0;i<requests.length;i++){
 		var obj = requests[i];
+
 		//format the license names
 		obj['lcnsNames'] = '';
 		for(x=0;x<obj['lcnsTypes'].length;x++){
 			obj['lcnsNames'] += obj['lcnsTypes'][x]['name'];
 			(x == (obj['lcnsTypes'].length -1) ? '' : obj['lcnsNames'] += ', ' );
 		}
+		delete obj['lcnsTypes'];
 
-		var tableRow = "<tr>"+
-				"<td>"+obj['requester']+"</td>"+
-				"<td>"+obj['pc_name']+"</td>"+
-				"<td>"+obj['role']+"</td>"+
-				"<td>"+obj['lcnsNames']+"</td>"+
-				"<td>"+obj['created_at']+"</td>";
-		if(roleId == obj['role_id'] || roleId == 1)
-		{
-			tableRow += "<td>"+(obj['actions'] ? obj['actions'] : "")+"</td>";
+		//create the table row for the request
+		that.tableHeader = "<tr id='request-'"+obj['id']+">";
+		var tableRow = "<tr id='request-"+obj['id']+"'>";
+		for(var key in obj){
+			if(key!='actions' && key!='id'){
+				that.tableHeader += "<td>"+key+"</td>";
+				tableRow += "<td>"+obj[key]+"</td>";
+			}
 		}
+		that.tableHeader += "<td>actions</td>";
+		that.tableHeader += "</tr>";
+		tableRow += "<td class='actions'>"+obj['actions']+"</td>";
 		tableRow +="</tr>";
+
+		that.table.find('thead').empty().append(that.tableHeader);
 		that.table.append(tableRow);
 	}
 
@@ -108,9 +121,9 @@ Requests.prototype.populateTableBody = function(data)
 Requests.prototype.delete = function(e)
 {
 	e.preventDefault() ? e.preventDefault() : e.returnValue = false;
-	var reqId = $(this).attr('id');
-	var url = $(this).attr('href');
-	/*
+	var reqId = $(e.target).parents('tr').attr('id');
+	var url = $(e.target).parent('a').attr('href');
+
 	$.ajax({
 		url:url,
 		type:'DELETE',
@@ -118,15 +131,17 @@ Requests.prototype.delete = function(e)
 		success:function(data){
 			if(!data.error)
 			{
-				var row = $('tr#request-'+reqId);
+				var row = $('tr#'+reqId);
+			
 				row.find('td').css('background-color', 'transparent');
-				
-				row.addClass('delete-highlight');
-				row.fadeOut('slow');
+				row.addClass('delete-highlight').delay(500).queue(function(next){
+					row.fadeOut('slow');
+					next();
+				});
 			}
 		},
 		error:function(response){
 			//
 		}
-	});*/
+	});
 }

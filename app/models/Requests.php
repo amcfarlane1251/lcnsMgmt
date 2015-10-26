@@ -12,8 +12,18 @@ class Requests extends Elegant
 		return $this->belongsTo('Role', 'role_id');
 	}
 
+	public function unit()
+	{
+		return $this->belongsTo('Unit', 'unit_id');
+	}
+
 	public function account() {
-		return $this->belongsTo('User', 'account_id', 'id');
+		return $this->belongsTo('Account', 'account_id', 'id');
+	}
+
+	protected function accountCreator()
+	{
+		return $this->belongsTo('Account', 'id', 'created_from');
 	}
 
 	public function licenseTypes(){
@@ -54,5 +64,19 @@ class Requests extends Elegant
 		catch(Exception $e){
     		echo 'Caught exception: ',  $e->getMessage(), "\n";
     	}
+
+    	return $this->id;
+	}
+
+	public function deletePrep($id = null)
+	{
+		if($id){
+			$this->find($id);
+		}
+
+		$this->licenseTypes()->detach();
+		if($account = $this->accountCreator){
+			$account->forceDelete();
+		}
 	}
 }

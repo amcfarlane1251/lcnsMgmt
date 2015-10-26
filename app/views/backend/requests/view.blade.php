@@ -19,10 +19,20 @@
 			<label>@lang('request.requester'):</label> {{$request->owner->first_name." ".$request->owner->last_name}} 
 		</div>
 		<div>
-			<label>@lang('request.pcName'):</label> {{$request->pc_name}}
+			<label>@lang('general.unit'):</label> {{$request->unit->name}}
 		</div>
 		<div>
-			<label>@lang('request.ec'):</label> {{$request->roles->role}}
+			<label>@lang('general.ec'):</label> {{$request->roles->role}}
+		</div>
+		@if($request->pc_name)
+			<label>@lang('request.pcName'):</label> {{$request->pc_name}}
+		@endif
+		<h2>@lang('request.accountInfo')</h2>
+		<div>
+			<label>@lang('account.username'):</label> {{$request->account->username}}
+		</div>
+		<div>
+			<label>@lang('account.name'):</label> {{$request->account->first_name." ".$request->account->last_name}}
 		</div>
 	</div>
 

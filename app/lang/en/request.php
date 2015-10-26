@@ -33,6 +33,8 @@ return array(
 	'type' => 'License Type',
 	'approve' => 'Approve?',
 	'dateReq' => 'Date Requested',
+	'accountInfo' => 'Account Information',
+	'for' => 'Request For',
 
 	'message.error.no_lcns_publ' => ''
 );
