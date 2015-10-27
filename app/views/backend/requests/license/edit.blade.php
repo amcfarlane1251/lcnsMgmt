@@ -82,7 +82,7 @@
 				<h3>Account</h3>
 				<div class="form-group {{ $errors->has('username') ? 'has-error' : '' }}">
 					<div class="col-md-2">
-						{{ Form::label('username', Lang::get('general.username'), array('class'=>'control-label')) }}
+						{{ Form::label('username', Lang::get('account.username'), array('class'=>'control-label')) }}
 					</div>
 					<div class="col-md-4">
 						{{ Form::text('username', ($request->account ? $request->account->username : ''), array('class'=>'form-control')) }}
@@ -92,7 +92,7 @@
 
 				<div class="form-group {{ $errors->has('fname') ? 'has-error' : '' }}">
 					<div class="col-md-2 clearfix">
-						{{ Form::label('fname', Lang::get('general.fname'), array('class'=>'control-label')) }}
+						{{ Form::label('fname', Lang::get('account.firstName'), array('class'=>'control-label')) }}
 					</div>
 					<div class="col-md-4">
 						{{ Form::text('fname', ($request->account ? $request->account->first_name : ''), array('class'=>'form-control')) }}
@@ -102,7 +102,7 @@
 
 				<div class="form-group {{ $errors->has('lname') ? 'has-error' : '' }}">
 					<div class="col-md-2 clearfix">
-						{{ Form::label('lname', Lang::get('general.lname'), array('class'=>'control-label')) }}
+						{{ Form::label('lname', Lang::get('account.lastName'), array('class'=>'control-label')) }}
 					</div>
 					<div class="col-md-4">
 						{{ Form::text('lname', ($request->account ? $request->account->last_name : ''), array('class'=>'form-control')) }}
@@ -139,6 +139,79 @@
 			toggleHelper2.init();
 			toggleHelper3 = new ToggleHelper('lcnsContainer','SABA Publisher','accountInfo',shared);
 			toggleHelper3.init();
+
+    		var users;
+    		var userEntry;
+
+			var req = $.ajax({
+				url:'../accounts',
+				success:function(data){
+					data = JSON.parse(data);
+					users = data.accounts;
+				},
+			});
+
+			req.then(function(){
+				$(document).on('keydown.autocomplete', '#username', function(){
+					$(this).autocomplete({
+						source: function(request, response){
+							var results = [];
+							var term = request.term;
+
+							if(term.length > 0){
+								for(var index in users){
+									if(users[index].username.toLowerCase().indexOf(term.toLowerCase()) == 0){
+										results.push(users[index]);
+									}
+								}
+							}
+							else{
+								results = ['Start typing...'];
+							}
+
+							response($.map(results, function(item){
+								if(item['id']){
+									return{
+										label: item['username'],
+										firstName: item['first_name'],
+										lastName: item['last_name']
+									}
+								}
+								else{
+									return results;
+								}
+							}));
+						},//end source
+						focus: function(event,ui){
+							//do nothing
+							return false;
+						},
+						select: function(event, ui){
+							$(this).blur();
+							$('#fname').val(ui.item.firstName).prop('disabled', true);
+							$('#lname').val(ui.item.lastName).prop('disabled', true);
+							userEntry = ui.item.label;
+						}
+					});//end autocomplete
+				});
+			});
+
+			var elem = $('#username');
+			// Save current value of element
+			elem.data('oldVal', elem.val());
+
+			// Look for changes in the value
+			elem.bind("propertychange change keyup input paste", function(event){
+			    // If value has changed...
+			    if (elem.data('oldVal') != elem.val()) {
+				    // Updated stored value
+				    elem.data('oldVal', elem.val());
+
+				    // Do action
+					$('#fname').val('').prop('disabled', false);
+					$('#lname').val('').prop('disabled', false);
+				}
+			});
 		});
 	</script>
 @stop

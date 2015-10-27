@@ -26,7 +26,7 @@
         <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/compiled/icons.css') }}">
 
 	    <!-- libraries -->
-	    <link rel="stylesheet" href="{{ asset('assets/css/lib/jquery-ui-1.10.2.custom.css') }}" type="text/css">
+	    <link rel="stylesheet" href="{{ asset('assets/css/lib/jquery-ui.min.css') }}" type="text/css">
 	    <link rel="stylesheet" href="{{ asset('assets/css/lib/font-awesome.min.css') }}" type="text/css">
 	    <link rel="stylesheet" href="{{ asset('assets/css/lib/morris.css') }}" type="text/css">
         <link rel="stylesheet" href="{{ asset('assets/css/lib/select2.css') }}" type="text/css">
@@ -399,6 +399,7 @@
     <script src="{{ asset('assets/js/jquery.knob.js') }}"></script>
     <script src="{{ asset('assets/js/select2.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.uniform.min.js') }}"></script>
+    <script src="{{ asset('assets/js/jquery-ui.min.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap.datepicker.js') }}"></script>
     <script src="{{ asset('assets/js/theme.js') }}"></script>
     <script src="{{ asset('assets/js/snipeit.js') }}"></script>

@@ -165,6 +165,14 @@ Route::group(array('prefix' => 'licenses', 'before' => 'requestor-auth'), functi
 });
 
 /*
+ * Account Routes
+ *
+ **/
+Route::group(array('prefix'=>'accounts', 'before'=>'requestor-auth'), function(){
+    Route::resource('', 'Controllers\AccountsController');
+});
+
+/*
 |--------------------------------------------------------------------------
 | Admin Routes
 |--------------------------------------------------------------------------
