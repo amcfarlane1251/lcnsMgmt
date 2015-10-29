@@ -77,10 +77,6 @@
         <style>
 
         @section('styles')
-        h3 {
-            padding: 10px;
-        }
-
         @show
 
 		@if (Setting::getSettings()->header_color)
