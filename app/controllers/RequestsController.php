@@ -31,8 +31,8 @@ class RequestsController extends \BaseController {
      * @var array
      */
     protected $validationRules = array(
-        'ec'       => 'required',
-        'lcnsTypes'        => 'required',
+        'ec'      		=> 'required',
+        'lcnsTypes' 	=> 'required',
     );
 
  	/**
@@ -162,9 +162,10 @@ class RequestsController extends \BaseController {
 		$unit = Input::get('unit');
 		$ec = Input::get('ec');
 		$requesterId = Sentry::getUser()->id;
-		$fname = Input::get('fname');
+		$firstName = Input::get('firstName');
 		$lname = Input::get('lname');
 		$username = Input::get('username');
+		$userStatus = Input::get('userStatus');
 
 		if($type=='account') {
 			//account variables
@@ -184,7 +185,7 @@ class RequestsController extends \BaseController {
 
 			$accountValues = array(
 				'role_id' => $ec,
-				'first_name' => $fname,
+				'first_name' => $firstName,
 				'last_name' => $lname,
 				'password' => 'default',
 				'activated' => 0,
@@ -221,24 +222,39 @@ class RequestsController extends \BaseController {
 	        );
 	        //fill account obj with common fields
 	        $accountParams = array(
-	        	'first_name'=> $fname,
+	        	'first_name'=> $firstName,
 	        	'last_name'=>$lname,
 	        	'username'=>$username,
 	        );
 
+	        $request = Request::withParams($reqParams);
+
 	        foreach($lcnsTypes as $typeId) {
 	        	if(LicenseType::find($typeId)->name =='SABA Publisher'){
-	        		$reqParams['pc_name'] = $pcName;
+	        		$request->pc_name = $pcName;
+	        		$return = $request->validation();
+	        		if($return) {
+	 					return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
+	 				}	
 	        	}
 	        }
 
- 			$account = new Account();
-    		$account->store($accountParams);
-
-    		$reqParams['account_id'] = $account->id;
-    		
-    		$account->created_from = $request->store($reqParams);
-    		$account->save();
+	 		if($userStatus=='existing') {
+	 			$account = Account::where('username', $username)->first();
+	 			$request->account_id = $account->id;
+	 			$request->store($reqParams);
+	 		}
+	 		else{
+ 				$account = Account::withParams($accountParams);
+	 			$return = $account->validation();
+	 			if($return) {
+	 				return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
+	 			}
+	 			$account->store();
+	 			$request->account_id = $account->id;
+	 			$account->created_from = $request->store($reqParams);
+    			$account->save();
+	 		}
 
 			//save the license types to the request
         	foreach($lcnsTypes as $lcnsType){
@@ -341,7 +357,6 @@ class RequestsController extends \BaseController {
 			header(' ', true, 404);
 			return Redirect::route('request')->with('error', 'Request not found.');
 		}
-		error_log(print_R($request, true));
 		//delete request and any records in pivot table
 		try{
 			$request->deletePrep();

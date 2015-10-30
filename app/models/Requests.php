@@ -4,6 +4,15 @@ class Requests extends Elegant
 
 	protected $table = 'requests';
 
+	public static function withParams(array $params)
+	{
+		$instance = new self();
+		foreach($params as $key => $value) {
+			$instance->$key = $value;
+		}
+		return $instance;
+	}
+
 	public function owner(){
 		return $this->belongsTo('User', 'user_id');
 	}
@@ -50,6 +59,16 @@ class Requests extends Elegant
 			$this->$key = $value;
 		}
 		return $this->save();
+	}
+
+	public function validation()
+	{
+		//check if username exists
+		$validator = Validator::make(array("pcName"=>$this->pc_name), 
+					  array('pcName' => 'required'));
+		if($validator->fails()) {
+			return $validator->messages();
+		}
 	}
 
 	public function store($values)

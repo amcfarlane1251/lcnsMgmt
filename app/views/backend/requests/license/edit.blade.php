@@ -57,17 +57,25 @@
 				<div class="col-md-4" id="lcnsContainer">
 					<select name="lcnsTypes[]" id="lcnsTypes[]" multiple="multiple" class="form-control">
 						@foreach($lcnsTypes as $id => $lcnsType)
+							@if(array_key_exists('lcnsTypes',Input::old()))
 							<option value="{{$id}}"
-							{{ (in_array($id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}>
+							{{ (in_array($id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}
+							{{ (in_array($id, Input::old('lcnsTypes')) ? 'selected="selected"' : '') }}>
 							{{{ $lcnsType }}}
 							</option>
+							@else
+								<option value="{{$id}}"
+								{{ (in_array($id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}>
+								{{{ $lcnsType }}}
+								</option>
+							@endif
 						@endforeach
 					</select>
 				</div>
 			</div>
 
 			{{-- PC Name --}}
-			<div class="form-group {{ $errors->has('pcName') ? 'has-error' : '' }} hidden" data-toggle='pcName'>
+			<div class="form-group {{ $errors->has('pcName') ? 'has-error' : 'hidden' }} " data-toggle='pcName'>
 				<div class="col-md-2">
 					{{ Form::label('pcName', Lang::get('request.pcName'), array('class'=>'control-label')) }}
 				</div>
@@ -78,7 +86,7 @@
 			</div>
 
 			{{-- Account --}}
-			<div class="hidden" data-toggle='accountInfo'>
+				<div class="{{array_key_exists('lcnsTypes',Input::old()) ? '' : 'hidden' }}" data-toggle='accountInfo'>
 				<h3>Account</h3>
 				<div class="btn-group" role="group" id="user-select">
 					<h5>Please select an option:</h5>
@@ -86,23 +94,26 @@
 					<button type='button' class="btn btn-default" data-select="new">New User?</button>
 				</div>
 				<div class="form-container">
+					<div id="account-id" class="col-md-2 alert alert-success hidden" style="float:none;display:inline-block;padding:2px;">
+						<p><i class="fa fa-check"></i><strong>Success: </strong>Account Selected</p>
+					</div>
 					<div class="form-group {{ $errors->has('username') ? 'has-error' : '' }}">
 						<div class="col-md-2">
 							{{ Form::label('username', Lang::get('account.username'), array('class'=>'control-label')) }}
 						</div>
 						<div class="col-md-4">
-							{{ Form::text('username', ($request->account ? $request->account->username : ''), array('class'=>'form-control','disabled'=>'true')) }}
+							{{ Form::text('username', ($request->account ? $request->account->username : ''), array('class'=>'form-control','readonly'=>'true')) }}
 							{{ $errors->first('username', '<br><span class="alert-msg">:message</span>') }}
 						</div>
 					</div>
 
-					<div class="form-group {{ $errors->has('fname') ? 'has-error' : '' }}">
+					<div class="form-group {{ $errors->has('firstName') ? 'has-error' : '' }}">
 						<div class="col-md-2 clearfix">
-							{{ Form::label('fname', Lang::get('account.firstName'), array('class'=>'control-label')) }}
+							{{ Form::label('firstName', Lang::get('account.firstName'), array('class'=>'control-label','readonly'=>true)) }}
 						</div>
 						<div class="col-md-4">
-							{{ Form::text('fname', ($request->account ? $request->account->first_name : ''), array('class'=>'form-control','disabled'=>'true')) }}
-							{{ $errors->first('fname', '<br><span class="alert-msg">:message</span>') }}
+							{{ Form::text('firstName', ($request->account ? $request->account->first_name : ''), array('class'=>'form-control','readonly'=>'true')) }}
+							{{ $errors->first('firstName', '<br><span class="alert-msg">:message</span>') }}
 						</div>
 					</div>
 
@@ -111,7 +122,7 @@
 							{{ Form::label('lname', Lang::get('account.lastName'), array('class'=>'control-label')) }}
 						</div>
 						<div class="col-md-4">
-							{{ Form::text('lname', ($request->account ? $request->account->last_name : ''), array('class'=>'form-control','disabled'=>'true')) }}
+							{{ Form::text('lname', ($request->account ? $request->account->last_name : ''), array('class'=>'form-control','readonly'=>'true')) }}
 							{{ $errors->first('lname', '<br><span class="alert-msg">:message</span>') }}
 						</div>
 					</div>
@@ -132,10 +143,10 @@
 			<div class="hidden">
 				<input type="hidden" value="{{$type}}" name="type" id="type"/>
 			</div>
-			{{ Form::submit('Submit Request') }}
-			<div id="account-id" class="col-md-3 alert alert-success hidden" style="float:none;display:inline-block;padding:2px;">
-				<p><i class="fa fa-check"></i><strong>Success: </strong>Account Selected</p>
+			<div class="hidden">
+				<input type="hidden" value="{{Input::old('userStatus')}}" name="userStatus" id="userStatus"/>
 			</div>
+			{{ Form::submit('Submit Request') }}
 		</div>
 	</div>
 
@@ -149,6 +160,9 @@
 			toggleHelper3 = new ToggleHelper('lcnsContainer','SABA Publisher','accountInfo',shared);
 			toggleHelper3.init();
 
+			var usernameDOM = $('#username');
+			var firstNameDOM = $('#firstName');
+			var lnameDOM = $('#lname');
 			var users;
 			var req = $.ajax({
 				url:'../accounts',
@@ -160,18 +174,18 @@
 
 			//select exisiting or new account
 			$('#user-select .btn').click(function(e){
+				//toggle button classes
 				$(this).siblings('.btn').removeClass('active');
 				$(this).addClass('active');
-				//clear and enable fields
-				var usernameDOM = $('#username');
-				var fnameDOM = $('#fname');
-				var lnameDOM = $('#lname');
 
-				usernameDOM.val('').prop('disabled', false);
+				//enable username field
+				$('#userStatus').val($(this).data('select'));
+				usernameDOM.val('').prop('readonly', false);
 
 				if( $(this).data('select') == 'existing' ){
-					fnameDOM.val('').prop('disabled', true);
-					lnameDOM.val('').prop('disabled', true);
+					//clear fields and set to read only
+					firstNameDOM.val('').prop('readonly', true);
+					lnameDOM.val('').prop('readonly', true);
 		    		var userEntry;
 
 					req.then(function(){
@@ -190,7 +204,6 @@
 									else{
 										results = ['Start typing...'];
 									}
-
 									response($.map(results, function(item){
 										if(item['id']){
 											return{
@@ -212,8 +225,8 @@
 								select: function(event, ui){
 									$(this).blur();
 
-									$('#fname').val(ui.item.firstName).prop('disabled', true);
-									$('#lname').val(ui.item.lastName).prop('disabled', true);
+									$('#firstName').val(ui.item.firstName).prop('readonly', true);
+									$('#lname').val(ui.item.lastName).prop('readonly', true);
 									$('#account-id').removeClass('hidden');
 									$('#account-id').attr('data-account', ui.item.accountId);
 
@@ -233,8 +246,8 @@
 						    // Updated stored value
 						    usernameDOM.data('oldVal', usernameDOM.val());
 						    // Do action
-						    //usernameDOM.val('').prop('disabled', false);
-							$('#fname').val('');
+						    //usernameDOM.val('').prop('readonly', false);
+							$('#firstName').val('');
 							$('#lname').val('');
 							$('#account-id').addClass('hidden');
 							$('#account-id').attr('data-account', '');
@@ -243,8 +256,8 @@
 				}
 				//new user
 				else if( $(this).data('select') == 'new' ){
-					fnameDOM.val('').prop('disabled', false);
-					lnameDOM.val('').prop('disabled', false);
+					firstNameDOM.val('').prop('readonly', false);
+					lnameDOM.val('').prop('readonly', false);
 					$('#account-id').addClass('hidden');
 					$('#account-id').attr('data-account', '');
 
@@ -254,6 +267,14 @@
 					}
 				}
 			})
+
+			if($('#userStatus').val() == 'new'){
+				$("#user-select .btn[data-select='"+$('#userStatus')+"']").addClass('active');
+
+				usernameDOM.prop('readonly', false);
+				firstNameDOM.prop('readonly', false);
+				lnameDOM.prop('readonly', false);
+			}
 		});
 	</script>
 @stop
