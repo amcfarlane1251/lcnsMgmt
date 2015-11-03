@@ -8,7 +8,7 @@
 @section('content')
 <div class="row">
 	<div class="page-header col-md-12">
-		<h1>View Request</h1>
+		<h1>Approve Request</h1>
 	</div>
 </div>
 
@@ -54,4 +54,11 @@
 	</div>
 </div>
 
+<div class="row">
+	<div class="col-lg-12">
+		{{ Form::open(array('url'=>'request/'.$request->id, 'method'=>'PUT')) }}
+		<input type="hidden" name="action" value="approve"/>
+		{{ Form::submit('Approve Request', array('class'=>'btn btn-primary')) }}
+	</div>
+</div>
 @stop

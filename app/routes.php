@@ -142,7 +142,8 @@ Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), 
     Route::resource('request', 'RequestsController');
 });
 
-Route::post('request/{id}/approve', array('uses' => 'Controllers\RequestsController@approve', 'before' => 'admin-auth'));
+Route::get('request/{id}/approve', array('uses' => 'Controllers\RequestsController@approvalForm', 'before' => 'authorizer-auth'));
+Route::put('request/{id}', array('uses' => 'Controllers\RequestsController@update', 'before' => 'authorizer-auth'));
 
 /*
  * Asset Routes

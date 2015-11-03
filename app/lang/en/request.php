@@ -5,6 +5,7 @@ return array(
 	'request' => 'Request',
 	'requests' => 'All Requests',
 
+	'formSection' => 'License Information',
 	'all' => 'All Active Requests',
 	'viewAll' => 'View All Requests',
 	'requestLicense' => 'Request a License',
@@ -35,6 +36,11 @@ return array(
 	'dateReq' => 'Date Requested',
 	'accountInfo' => 'Account Information',
 	'for' => 'Request For',
+	'status' => 'Status',
+	'status.bmo' => 'Awaiting BMO Approval',
+	'status.authorizer' => 'Awaiting Authorizer Approval',
+	'status.closed' => 'Request Closed',
 
-	'message.error.no_lcns_publ' => ''
+	'message.error.no_lcns_publ' => '',
+	'approved' => 'Request Approved',
 );

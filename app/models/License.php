@@ -181,6 +181,12 @@ class License extends Depreciable
             ->update(array('asset_id' => $assetId));
     }
 
+    public static function checkOutToAccount($seatId, $accountId){
+        DB::table('license_seats')
+            ->where('id', '=', $seatId)
+            ->update(array('assigned_to' => $accountId));
+    }
+
     public function populateDashboard($roleId)
     {        
         $licenses = array();
@@ -227,7 +233,7 @@ class License extends Depreciable
             ->orwhere(function($query) use ($typeId, $roleId){
                 $query->where('licenses.type_id', $typeId)
                       ->where('licenses.role_id', $roleId)
-                      ->whereNotNull('license_seats.asset_id');
+                      ->whereNotNull('license_seats.assigned_to');
             })->count();
     }
 

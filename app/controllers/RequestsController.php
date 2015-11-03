@@ -45,23 +45,20 @@ class RequestsController extends \BaseController {
 		//get user role
 		$user = Sentry::getUser();
 		$role = $user->role;
-
 		//get URL params
 		(Input::get('reqCode') ? $reqCode = Input::get('reqCode') : $reqCode = '');
-		(Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = '');
+		(Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = $role->id);
 		(Input::get('type') ? $type = Input::get('type') : $type = 'license');
 
 		if($role->role != 'All' && $role->id != $roleId) {
 			return Redirect::to('/')->with('error', 'Cannot access that EC');
 		}
-
-		if($roleId) {
-			$requests = Request::where('request_code',$reqCode)->where('role_id', $roleId)->where('type', $type)->orderBy('created_at','desc')->get();
+		if($role->role == 'All') {
+			if(!$reqCode){$reqCode = 1;}
+			if($roleId==1){$roleId='';}
 		}
-		else{
-			$requests = Request::where('request_code',$reqCode)->where('type', $type)->orderBy('created_at','desc')->get();
-		}
-
+		//get the requests
+		$requests = Request::retrieve($roleId, $reqCode, $type);error_log(print_R($requests,true));
 		//ajax request so return json
 		if($this->httpRequest->ajax()){
 			//make table headers
@@ -80,11 +77,11 @@ class RequestsController extends \BaseController {
 				$return[$key]->created_at = (string)$request->created_at;
 
 				if($requests[$key]->request_code != 'closed'){
-					if($user->hasAccess('admin') || $user->role->id == $requests[$key]->role_id){
+					if($user->hasAccess('authorize') || $user->role->id == $requests[$key]->role_id){
 						$return[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
 						$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='delete-request'><i class='fa fa-trash icon-white'></i></a>";
 					}
-					if($user->hasAccess('admin')){
+					if($user->hasAccess('authorize')){
 						$return[$key]->actions .= "<a href=" .URL::to('request/'.$request->id.'/approve'). "><i class='fa fa-check icon-blue'></i></a>";
 					}
 				}
@@ -246,8 +243,7 @@ class RequestsController extends \BaseController {
 	 		}
 	 		else{
  				$account = Account::withParams($accountParams);
-	 			$return = $account->validation();
-	 			if($return) {
+	 			if($return = $account->validation()) {
 	 				return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
 	 			}
 	 			$account->store();
@@ -338,9 +334,14 @@ class RequestsController extends \BaseController {
 	 */
 	public function update($id)
 	{
-		//
+		$return = $this->approve($id);
+		if($return['success']){
+			return Redirect::to('request/'.$id)->with('success', $return['message']);
+		}
+		else{
+			return Redirect::to('request/'.$id)->with('error', $return['message']);
+		}
 	}
-
 
 	/**
 	 * Remove the specified resource from storage.
@@ -374,12 +375,23 @@ class RequestsController extends \BaseController {
 		{
 			// Prepare the success message
 	        $success = Lang::get('request/message.success.delete');
-
 	        // Redirect to the request management page
 	        $user = Sentry::getUser();
 
 	        return Redirect::to("role/{$user->role->id}/request")->with('success', Lang::get('request.message.success.delete'));
 		}
+	}
+
+	public function approvalForm($id)
+	{
+		$request = Request::find($id);
+		//return resource not found if there is no request
+		if(!$request){
+			header(' ', true, 404);
+			return Redirect::to('request')->with('error', 'Request not found.');
+		}
+
+		return View::make('backend/requests/license/approve')->with('request',$request);
 	}
 
 	/**
@@ -396,60 +408,7 @@ class RequestsController extends \BaseController {
 			header(' ', true, 404);
 			return Redirect::to('request')->with('error', 'Request not found.');
 		}
-
-		//get all license types for request
-		$lcnsNames = $request->licenseTypes()->lists('name');
-
-		//get available license seats for each license type
-		foreach($lcnsNames as $lcnsName){
-			$lcnsSeat = DB::table('licenses')
-							->join('license_types', 'licenses.type_id', '=','license_types.id')
-							->join('license_seats', 'licenses.id', '=','license_seats.license_id')
-							->orwhere(function ($query) use ($lcnsName, $request){
-								$query
-									->where('license_types.name', '=', $lcnsName)
-									->where('licenses.role_id', $request->role_id)
-									->whereNull('license_seats.assigned_to');
-							})->first();
-			//if seats available add it to array for later processing, else return with error message
-			if($lcnsSeat){
-				$toAdd[] = $lcnsSeat;
-			}
-			else{
-				$messageKey = str_replace(' ', '', strtolower($lcnsName));
-				$error = Lang::get('request.message_no_lcns.'.$lcnsName);
-				return Redirect::to('request/'.$request->id.'/edit')->with('error', $error);
-			}
-		}
-
-		//create computer name as an asset if it doesnt exist
-		if($obj = DB::table('assets')->where('serial', $request->pc_name)->first(array('id'))){
-			$asset = Asset::find($obj->id);
-		}
-		else{
-			$asset = new Asset();
-
-			$asset->name = "DWAN PC";
-			$asset->serial = $request->pc_name;
-			$asset->asset_tag = $request->pc_name;
-			$asset->model_id = 7; //TODO: Remove this hard coding for model id
-			$asset->status_id = 1;
-		}
 		
-		$asset->role_id = $request->role_id;
-
-		if($asset->save()){
-			//asset saved, lets attach license seats to the asset
-			foreach($toAdd as $lcnsSeat){
-				License::checkOutToAsset($lcnsSeat->id, $asset->id);
-			}
-		}
-
-		//marked as closed
-		$request->request_code = 'closed';
-		$request->save();
-
-		return Redirect::to("dashboard/$request->role_id")->with('success', 'Request Approved');
-
+		return $request->approve();
 	}
 }

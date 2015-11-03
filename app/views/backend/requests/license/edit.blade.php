@@ -26,7 +26,7 @@
 			@else
 				{{ Form::open(array('url'=>'request','class'=>'form-horizontal')) }}
 			@endif
-
+			<h3>@Lang('request.formSection')</h3>
 			{{-- Unit --}}
 			<div class="form-group {{ $errors->has('unit') ? 'has-error' : '' }}">
 				<div class="col-md-2">
@@ -87,9 +87,9 @@
 
 			{{-- Account --}}
 				<div class="{{array_key_exists('lcnsTypes',Input::old()) ? '' : 'hidden' }}" data-toggle='accountInfo'>
-				<h3>Account</h3>
+				<h3>@Lang('account.formSection')</h3>
 				<div class="btn-group" role="group" id="user-select">
-					<h5>Please select an option:</h5>
+					<h5>@Lang('account.selectOption')</h5>
 					<button type='button' class="btn btn-default" data-select="existing">Existing User?</button>
 					<button type='button' class="btn btn-default" data-select="new">New User?</button>
 				</div>

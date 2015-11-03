@@ -21,7 +21,7 @@
         <div class="col-md-3 col-sm-3 stat">
             <div class="data">
                 <a href="{{ URL::to('request') }}">
-                    <span class="number">{{ number_format(Requests::count('license')) }}</span>
+                    <span class="number">{{ number_format(Requests::count('license',$user->role->id)) }}</span>
                     <span style="color:black">@lang('request.licenses')</span>
                 </a>
             </div>
@@ -29,7 +29,7 @@
         <div class="col-md-3 col-sm-3 stat last">
             <div class="data">
                 <a href="{{ URL::to('request?type=account') }}">
-                    <span class="number">{{ number_format(Requests::count('account')) }}</span>
+                    <span class="number">{{ number_format(Requests::count('account',$user->role->id)) }}</span>
                     <span style="color:black">@lang('request.accounts')</span>
                 </a>
             </div>
@@ -51,15 +51,17 @@
             </div>
         </div>
     </div>
-	<div class="row stats-row">
-		@foreach($ec as $key => $role)
-			<div class="col-md-4 col-sm-4 stat">
-				<div class="data">
-					<a href="{{ URL::to('dashboard/'.$key) }}"> {{ $role }} </a>
-				</div>
-			</div>
-		@endforeach
-	</div>
+    @if($user->hasAccess('admin'))
+    	<div class="row stats-row">
+    		@foreach($ec as $key => $role)
+    			<div class="col-md-4 col-sm-4 stat">
+    				<div class="data">
+    					<a href="{{ URL::to('dashboard/'.$key) }}"> {{ $role }} </a>
+    				</div>
+    			</div>
+    		@endforeach
+    	</div>
+    @endif
 </div>
 
 @stop

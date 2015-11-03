@@ -16,8 +16,8 @@ class DashboardController extends \BaseController
         $user = Sentry::getUser();
         $ec = $user->filterRoles();
 
-        if ($user->hasAccess('admin')){
-            return View::make('backend/adminDashboard')->with('ec',$ec)->with('userRoleId', $user->role_id);
+        if ($user->hasAccess('authorize')){
+            return View::make('backend/adminDashboard')->with('ec',$ec)->with('user', $user);
         }
         else{
             return $this->getIndex();

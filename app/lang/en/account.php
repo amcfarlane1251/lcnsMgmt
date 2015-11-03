@@ -1,8 +1,10 @@
 <?php
 
 return array(
-	'username' => 'Username',
-	'name'=> 'Name',
-	'firstName'=> 'First Name',
-	'lastName'=> 'Last Name',
+	'formSection'			=> 'Request For',
+	'selectOption'			=> 'Please select an option:',
+	'username' 				=> 'Username',
+	'name'					=> 'Name',
+	'firstName'				=> 'First Name',
+	'lastName'				=> 'Last Name',
 );
