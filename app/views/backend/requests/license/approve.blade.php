@@ -39,10 +39,10 @@
 		@endif
 		<h2>@lang('request.accountInfo')</h2>
 		<div>
-			<label>@lang('account.username'):</label> {{$request->account->username}}
+			<label>@lang('account.username'):</label> {{($request->account ? $request->account->username : '')}}
 		</div>
 		<div>
-			<label>@lang('account.name'):</label> {{$request->account->first_name." ".$request->account->last_name}}
+			<label>@lang('account.name'):</label> {{$request->account ? $request->account->first_name." ".$request->account->last_name : ''}}
 		</div>
 	</div>
 

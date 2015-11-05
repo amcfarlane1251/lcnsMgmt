@@ -42,6 +42,12 @@ class Requests extends Elegant
 		return $this->belongsToMany('LicenseType', 'licensetype_request', 'request_id', 'type_id');
 	}
 
+	//get the license seat associated with a request -> this is for checkin or move requests
+	public function licenseSeat()
+	{
+		return $this->belongs('LicenseSeat', 'license_id');
+	}
+
 	public static function count($type, $roleId)
 	{
 		( $roleId!=1 ? $reqCode='' : $reqCode=1 );
@@ -119,6 +125,7 @@ class Requests extends Elegant
 
 			//get available license seats for each license type
 			$that = $this;
+			$toAdd = [];
 			foreach($lcnsNames as $lcnsName){
 				$lcnsSeat = DB::table('licenses')
 								->join('license_types', 'licenses.type_id', '=','license_types.id')

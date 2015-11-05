@@ -311,6 +311,7 @@ class RequestsController extends \BaseController {
 
 		//get all the environmental commands
 		$ec = Sentry::getUser()->filterRoles();
+		$unit = Sentry::getUser()->filterUnits();
 
 		//define array of license types
 		$lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->lists('name', 'id');
@@ -322,6 +323,7 @@ class RequestsController extends \BaseController {
 			->with('ec', $ec)
 			->with('lcnsTypes', $lcnsTypes)
 			->with('approver', $approver)
+			->with('units', $unit)
 			->with('isApprover', $isApprover);
 	}
 

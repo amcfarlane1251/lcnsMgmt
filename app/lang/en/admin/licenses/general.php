@@ -24,4 +24,6 @@ return array(
     'MPG LSC' => 'MPG LCS Licenses',
     'Navy LSC' => 'Navy LCS Licenses',
     'RCAF' => 'RCAF Licenses',
+
+    'in_request' => 'Awaiting Request Approval',
 );

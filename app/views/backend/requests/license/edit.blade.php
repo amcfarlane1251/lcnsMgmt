@@ -86,7 +86,7 @@
 			</div>
 
 			{{-- Account --}}
-				<div class="{{array_key_exists('lcnsTypes',Input::old()) ? '' : 'hidden' }}" data-toggle='accountInfo'>
+			<div class="{{array_key_exists('lcnsTypes',Input::old()) ? '' : 'hidden' }}" data-toggle='accountInfo'>
 				<h3>@Lang('account.formSection')</h3>
 				<div class="btn-group" role="group" id="user-select">
 					<h5>@Lang('account.selectOption')</h5>

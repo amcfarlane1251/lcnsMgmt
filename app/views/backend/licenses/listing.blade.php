@@ -24,9 +24,19 @@
 			@foreach($licenses as $obj)
 			<tr>
 				<td>{{$obj->name}}</td>
-				<td>{{$obj->assignedAsset}}</td>
-				<td>{{$obj->assignedUser}}</td>
+				<td>{{( $obj->request ? "<span class='alert alert-warning' style='padding:2px;'>".Lang::get('admin/licenses/general.in_request')."</span>" : $obj->assignedAsset )}}</td>
+				<td>{{( $obj->request ? "<span class='alert alert-warning' style='padding:2px;'>".Lang::get('admin/licenses/general.in_request')."</span>" : $obj->assignedUser )}}</td>
 				<td>{{$obj->updatedAt}}</td>
+				@if($obj->request)
+					<td><a href="{{URL::to('licenses/'.$obj->id)}}" class="cancel-request btn btn-primary btn-xs">Cancel Request?</a></td>
+				@elseif($obj->assignedUser || $obj->assignedAsset)
+					<td>
+						<a href="{{URL::to('licenses/'.$obj->id)}}" class='checkin-license btn btn-primary btn-xs'>Check In</a>
+						<a href="{{URL::to('licenses/'.$obj->id)}}" class='move-license btn btn-primary btn-xs'>Move</a>
+					</td>
+				@else
+					<td></td>
+				@endif
 			</tr>
 			@endforeach
 		</tbody>

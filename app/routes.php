@@ -163,6 +163,7 @@ Route::group(array('prefix' => 'hardware', 'before' => 'requestor-auth'), functi
  **/
 Route::group(array('prefix' => 'licenses', 'before' => 'requestor-auth'), function(){
     Route::resource('', 'Controllers\Admin\LicensesController');
+    Route::put('{id}', 'Controllers\Admin\LicensesController@update');
 });
 
 /*

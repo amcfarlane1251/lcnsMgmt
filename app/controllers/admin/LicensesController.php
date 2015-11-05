@@ -23,6 +23,7 @@ use Response;
 use Datatable;
 use Slack;
 use Config;
+use Requests as Request;
 use Role;
 use Session;
 
@@ -974,5 +975,21 @@ class LicensesController extends AdminController
         $licenseObj = new License();
         $licenses = $licenseObj->filterByRole($id);
         return View::make('backend/licenses/listing')->with('licenses', $licenses);
+    }
+
+    //update the license resource
+    public function update($id)
+    {
+        $license = LicenseSeat::find($id);
+        $action = Input::get('action');
+
+        if($action=='checkin') {
+            return json_encode($this->checkin($license));
+        }
+    }
+
+    protected function checkin($licenseSeat)
+    {
+        return LicenseSeat::checkIn($licenseSeat);
     }
 }

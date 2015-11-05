@@ -178,7 +178,7 @@ class License extends Depreciable
     public static function checkOutToAsset($seatId, $assetId){
         DB::table('license_seats')
             ->where('id', '=', $seatId)
-            ->update(array('asset_id' => $assetId));
+            ->update(array('asset_id' => $assetId, 'updated_at'=>DB::raw('NOW()')));
     }
 
     public static function checkOutToAccount($seatId, $accountId){
@@ -287,28 +287,25 @@ class License extends Depreciable
 
         foreach($licenses as $key => $lcns)
         {
-            //get assigned user and assigned asset, if applicable
-            $user = User::where('id', $lcns->assigned_to)->lists('id','first_name','last_name');
-            $assignedUser = '';
-
-            $asset = Asset::where('id', $lcns->asset_id)->lists('asset_tag', 'id');
-            $assignedAsset = '';
-
-            if($user)
-            {
-                $assignedUser = "<a href=".URL::to('user/'.key($user)).">".$user[key($user)]."</a>";
-            }
-            if($asset)
-            {
-                $assignedAsset = "<a href=".URL::to('hardware/'.key($asset)).">".$asset[key($asset)]."</a>";
-            }
-
             $lcnsObj[$key] = new \stdClass();
             $lcnsObj[$key]->id = $lcns->id;
             $lcnsObj[$key]->name = $lcns->name;
-            $lcnsObj[$key]->assignedUser = $assignedUser;
-            $lcnsObj[$key]->assignedAsset = $assignedAsset;
+            $lcnsObj[$key]->assignedUser = '';
+            $lcnsObj[$key]->assignedAsset = '';
+            $lcnsObj[$key]->request = '';
             $lcnsObj[$key]->updatedAt = $lcns->updated_at;
+            //get assigned user and assigned asset, if applicable
+            $seat = LicenseSeat::find($lcns->id);
+
+            if($user = $seat->account) {
+                $lcnsObj[$key]->assignedUser = $user->first_name." ".$user->last_name;
+            }
+            if($asset = $seat->asset) {
+                $lcnsObj[$key]->assignedAsset = $asset->name." - ".$asset->asset_tag;
+            }
+            if($request = $seat->request) {
+                $lcnsObj[$key]->request = true;
+            }
         }
 
         return $lcnsObj;
