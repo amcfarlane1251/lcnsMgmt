@@ -15,6 +15,8 @@ return array(
 	'closed' => 'Closed Requests',
 	'licenses' => 'License Requests',
 	'accounts' => 'Account Requests',
+	'checkin' => 'Check-In Requests',
+	'move' => 'Move Requests',
 	'details' => 'Details',
 	'requestedLcns' => 'Requested License(s)',
 

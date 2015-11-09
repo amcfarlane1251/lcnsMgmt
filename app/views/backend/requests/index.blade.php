@@ -19,8 +19,10 @@
         <h3> @if(Request::is('request?reqCode=closed')) @lang('request.open') @else @lang('request.open') @endif </h3>
 	</div>
 	<div class="btn-group" role="group" aria-label="..." data-type="{{$type}}" data-url="{{URL::to('request')}}" data-role="{{$roleId}}">
-	 	<button type="button" class="btn btn-default" data-type="license">Licenses</button>
+	 	<button type="button" class="btn btn-default {{($type=='license' ? 'active' : '')}}" data-type="license">Licenses</button>
 		<button type="button" class="btn btn-default" data-type="account">Accounts</button>
+		<button type="button" class="btn btn-default" data-type="checkin">@Lang('requests.checkin')</button>
+		<button type="button" class="btn btn-default" data-type="move">@Lang('requests.move')</button>
 	</div>
 	<div id="requests">
 		<table class="table table-striped table-hover" id="requests">

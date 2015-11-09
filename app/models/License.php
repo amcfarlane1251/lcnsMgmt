@@ -281,6 +281,7 @@ class License extends Depreciable
                         ->where('licenses.role_id', $roleId)
                         ->orderBy('license_seats.updated_at', 'DESC')
                         ->orderBy('name', 'ASC')
+                        ->select('licenses.name', 'license_seats.*')
                         ->get();
         
         $lcnsObj = array();
@@ -304,7 +305,7 @@ class License extends Depreciable
                 $lcnsObj[$key]->assignedAsset = $asset->name." - ".$asset->asset_tag;
             }
             if($request = $seat->request) {
-                $lcnsObj[$key]->request = true;
+                if($request->request_code != 2){$lcnsObj[$key]->request = true;}
             }
         }
 

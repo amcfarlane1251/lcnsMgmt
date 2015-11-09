@@ -58,7 +58,7 @@ class RequestsController extends \BaseController {
 			if($roleId==1){$roleId='';}
 		}
 		//get the requests
-		$requests = Request::retrieve($roleId, $reqCode, $type);error_log(print_R($requests,true));
+		$requests = Request::retrieve($roleId, $reqCode, $type);
 		//ajax request so return json
 		if($this->httpRequest->ajax()){
 			//make table headers
@@ -73,9 +73,13 @@ class RequestsController extends \BaseController {
 				$return[$key]->unit = $request->unit->name;
 				$return[$key]->role = $request->roles->role;
 				$request->account ? $return[$key]->name = $request->account->first_name." ".$request->account->last_name : $return[$key]->name = '';
-				$return[$key]->lcnsTypes =  $request->licenseTypes;
+				if($type=='license') {
+					$return[$key]->lcnsTypes =  $request->licenseTypes;
+				}
+				elseif($type=='checkin') {
+					$return[$key]->lcnsName = $request->licenseSeat->license->name;
+				}
 				$return[$key]->created_at = (string)$request->created_at;
-
 				if($requests[$key]->request_code != 'closed'){
 					if($user->hasAccess('authorize') || $user->role->id == $requests[$key]->role_id){
 						$return[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
@@ -86,7 +90,7 @@ class RequestsController extends \BaseController {
 					}
 				}
 			}
-
+			if(!$return){$return="No requests found";}
 			header('Content-type: application/json');
 			//return Response::json(array('requests'=>$requests, 'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id), 200);
 			echo json_encode(array('requests'=>$return, 'header'=> $header,'isAdmin' => $user->hasAccess('admin'), 'roleId' => $user->role->id));
@@ -275,13 +279,13 @@ class RequestsController extends \BaseController {
 		//return resource not found if there is no request
 		if(!$request){
 			header(' ', true, 404);
-			return Redirect::route('request')->with('error', 'Request not found.');
+			return Redirect::to('request')->with('error', 'Request not found.');
 		}
 
 		if($request->type=='account') {
 			return View::make('backend/requests/accounts/view')->with('request', $request);
 		}
-		elseif($request->type=='license'){
+		else{
 			return View::make('backend/requests/view')->with('request', $request);
 		}
 	}
@@ -338,10 +342,10 @@ class RequestsController extends \BaseController {
 	{
 		$return = $this->approve($id);
 		if($return['success']){
-			return Redirect::to('request/'.$id)->with('success', $return['message']);
+			return Redirect::to('request?type='.$return['type'])->with('success', $return['message']);
 		}
 		else{
-			return Redirect::to('request/'.$id)->with('error', $return['message']);
+			return Redirect::to('request?type='.$return['type'])->with('error', $return['message']);
 		}
 	}
 
@@ -410,7 +414,7 @@ class RequestsController extends \BaseController {
 			header(' ', true, 404);
 			return Redirect::to('request')->with('error', 'Request not found.');
 		}
-		
+
 		return $request->approve();
 	}
 }

@@ -45,7 +45,7 @@ class Requests extends Elegant
 	//get the license seat associated with a request -> this is for checkin or move requests
 	public function licenseSeat()
 	{
-		return $this->belongs('LicenseSeat', 'license_id');
+		return $this->belongsTo('LicenseSeat', 'license_id');
 	}
 
 	public static function count($type, $roleId)
@@ -113,71 +113,81 @@ class Requests extends Elegant
 		//check the users group
 		$authorizers = Sentry::findGroupByName('Authorizers');
 		$admins = Sentry::findGroupByName('Admin');
-
+		//DLN authorizers
 		if(Sentry::getUser()->inGroup($authorizers)){
 			$this->request_code = 1;
 			$this->save();
-			return array('success'=>1,'message'=>'Request Approved');
+			return array('success'=>1,'message'=>'Request Approved','type'=>$this->type);
 		}
+		//BMO authorizers
 		elseif(Sentry::getUser()->inGroup($admins)){
 			//get all license types for request
 			$lcnsNames = $this->licenseTypes()->lists('name');
-
 			//get available license seats for each license type
 			$that = $this;
 			$toAdd = [];
-			foreach($lcnsNames as $lcnsName){
-				$lcnsSeat = DB::table('licenses')
-								->join('license_types', 'licenses.type_id', '=','license_types.id')
-								->join('license_seats', 'licenses.id', '=','license_seats.license_id')
-								->orwhere(function ($query) use ($lcnsName, $that){
-									$query
-										->where('license_types.name', '=', $lcnsName)
-										->where('licenses.role_id', $that->role_id)
-										->whereNull('license_seats.assigned_to');
-								})->first();
-				//if seats available add it to array for later processing, else return with error message
-				if($lcnsSeat){
-					$toAdd[$lcnsName] = $lcnsSeat;
-				}
-				else{
-					$messageKey = str_replace(' ', '', strtolower($lcnsName));
-					$error = Lang::get('request.message_no_lcns.'.$lcnsName);
-					return array('success'=>0,'message'=>$error);
-				}
-			}
-			foreach($toAdd as $key=>$lcnsSeat){
-				error_log($key);
-				if($key == 'SABA Publisher') {
-					//create computer name as an asset if it doesnt exist
-					if($obj = DB::table('assets')->where('serial', $this->pc_name)->first(array('id'))){
-						$asset = Asset::find($obj->id);
+
+			if($this->type=='license'){
+				//TODO:: remove and place in seperate method - this will need to be used to update a request
+				foreach($lcnsNames as $lcnsName){
+					$lcnsSeat = DB::table('licenses')
+									->join('license_types', 'licenses.type_id', '=','license_types.id')
+									->join('license_seats', 'licenses.id', '=','license_seats.license_id')
+									->orwhere(function ($query) use ($lcnsName, $that){
+										$query
+											->where('license_types.name', '=', $lcnsName)
+											->where('licenses.role_id', $that->role_id)
+											->whereNull('license_seats.assigned_to');
+									})->first();
+					//if seats available add it to array for later processing, else return with error message
+					if($lcnsSeat){
+						$toAdd[$lcnsName] = $lcnsSeat;
 					}
 					else{
-						$asset = new Asset();
-						$asset->name = "DWAN PC";
-						$asset->serial = $this->pc_name;
-						$asset->asset_tag = $this->pc_name;
-						$asset->model_id = 7; //TODO: Remove this hard coding for model id
-						$asset->status_id = 1;
-						$asset->assigned_to = $this->account->id;
+						$messageKey = str_replace(' ', '', strtolower($lcnsName));
+						$error = Lang::get('request.message_no_lcns.'.$lcnsName);
+						return array('success'=>0,'message'=>$error);
 					}
-					$asset->role_id = $this->role_id;
-					$asset->save();
-					License::checkOutToAsset($lcnsSeat->id, $asset->id);
 				}
-				//checkout to account the request has been made for
-				License::checkOutToAccount($lcnsSeat->id, $this->account_id);
-			}
 
-			//marked as closed
-			$this->request_code = 2;
-			$this->save();
+				foreach($toAdd as $key=>$lcnsSeat){
+					if($key == 'SABA Publisher') {
+						//create computer name as an asset if it doesnt exist
+						if($obj = DB::table('assets')->where('serial', $this->pc_name)->first(array('id'))){
+							$asset = Asset::find($obj->id);
+						}
+						else{
+							$asset = new Asset();
+							$asset->name = "DWAN PC";
+							$asset->serial = $this->pc_name;
+							$asset->asset_tag = $this->pc_name;
+							$asset->model_id = 7; //TODO: Remove this hard coding for model id
+							$asset->status_id = 1;
+							$asset->assigned_to = $this->account->id;
+						}
+						$asset->role_id = $this->role_id;
+						$asset->save();
+						License::checkOutToAsset($lcnsSeat->id, $asset->id);
+					}
+					
+					//checkout to account the request has been made for
+					License::checkOutToAccount($lcnsSeat->id, $this->account_id);					
+				}
+			}
+			elseif($this->type=='checkin')
+			{
+				//clear license fields
+				$seat = LicenseSeat::find($this->license_id);
+				$seat->checkIn();
+			}
 
 			//detach requested licenses
 			$this->licenseTypes()->detach();
+			$type = $this->type;
+			//marked as closed
+			$this->delete();
 
-			return array('success'=>1,'message'=>'Request Approved');
+			return array('success'=>1,'message'=>'Request Approved','type'=>$type);
 		}
 	}
 

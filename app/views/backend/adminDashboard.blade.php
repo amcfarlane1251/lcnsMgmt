@@ -26,7 +26,7 @@
                 </a>
             </div>
         </div>
-        <div class="col-md-3 col-sm-3 stat last">
+        <div class="col-md-3 col-sm-3 stat">
             <div class="data">
                 <a href="{{ URL::to('request?type=account') }}">
                     <span class="number">{{ number_format(Requests::count('account',$user->role->id)) }}</span>
@@ -36,17 +36,17 @@
         </div>
         <div class="col-md-3 col-sm-3 stat">
             <div class="data">
-                <a href="{{ URL::to('hardware') }}">
-                    <span class="number">{{ number_format(Asset::assetcount()) }}</span>
-                       <span style="color:black">@lang('general.total_assets')</span>
+                <a href="{{ URL::to('request?type=checkin') }}">
+                    <span class="number">{{ number_format(Requests::count('checkin',$user->role->id)) }}</span>
+                       <span style="color:black">@lang('request.checkin')</span>
                 </a>
             </div>
         </div>
         <div class="col-md-3 col-sm-3 stat">
             <div class="data">
-                <a href="{{ URL::to('admin/licenses') }}">
+                <a href="{{ URL::to('request?type=checkin') }}">
                     <span class="number">{{ number_format(License::assetcount()) }}</span>
-                    <span style="color:black">@lang('general.total_licenses')</span>
+                    <span style="color:black">@lang('request.move')</span>
                 </a>
             </div>
         </div>

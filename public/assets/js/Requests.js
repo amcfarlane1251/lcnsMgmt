@@ -7,6 +7,7 @@ var Requests = function(){
 
 Requests.prototype.setProperties = function()
 {
+	this.siteUrl = 'localhost/snipe/public';
 	this.container = $('.content');
 	this.reqType = $('.btn-group').data('type');
 	this.url = $('.btn-group').data('url');
@@ -31,6 +32,19 @@ Requests.prototype.populateRequests = function()
 	that.getRequests();
 }
 
+Requests.prototype.toggleTypes = function(e)
+{
+	e.preventDefault() ? e.preventDefault() : e.returnValue = false;
+	$(this).siblings('.active').removeClass('active');
+	$(this).addClass('active');
+	
+	var url = $(this).data('url');
+	//var type = $(this).data('type');
+	that.reqType = $(this).data('type');
+	that.clearTable();
+	that.getRequests();
+}
+
 Requests.prototype.getRequests = function()
 {	
 	$.ajax({
@@ -47,40 +61,36 @@ Requests.prototype.getRequests = function()
 	});
 }
 
-Requests.prototype.toggleTypes = function(e)
-{
-	e.preventDefault() ? e.preventDefault() : e.returnValue = false;
-
-	var url = $(this).data('url');
-	//var type = $(this).data('type');
-	that.reqType = $(this).data('type');
-	that.clearTable();
-	that.getRequests();
-}
-
 Requests.prototype.populateTable = function(data)
 {
 	var requests = data.requests;
 	var roleId = data.roleId; 
 
+	if( Object.prototype.toString.call( requests ) === '[object Array]' ) {
 	for(var i=0;i<requests.length;i++){
 		var obj = requests[i];
 
 		//format the license names
-		obj['lcnsNames'] = '';
-		for(x=0;x<obj['lcnsTypes'].length;x++){
-			obj['lcnsNames'] += obj['lcnsTypes'][x]['name'];
-			(x == (obj['lcnsTypes'].length -1) ? '' : obj['lcnsNames'] += ', ' );
+		if(obj['lcnsTypes']) {
+			obj['lcnsNames'] = '';
+			for(x=0;x<obj['lcnsTypes'].length;x++){
+				obj['lcnsNames'] += obj['lcnsTypes'][x]['name'];
+				(x == (obj['lcnsTypes'].length -1) ? '' : obj['lcnsNames'] += ', ' );
+			}
+			delete obj['lcnsTypes'];
 		}
-		delete obj['lcnsTypes'];
-
 		//create the table row for the request
 		that.tableHeader = "<tr id='request-'"+obj['id']+">";
 		var tableRow = "<tr id='request-"+obj['id']+"'>";
 		for(var key in obj){
-			if(key!='actions' && key!='id'){
+			if(key!='actions'){
 				that.tableHeader += "<td>"+key+"</td>";
-				tableRow += "<td>"+obj[key]+"</td>";
+				if(key=='id') {
+					tableRow += "<td><a href='"+that.siteUrl+"/request/'"+obj[key]+"</td>"
+				}
+				else{
+					tableRow += "<td>"+obj[key]+"</td>";
+				}
 			}
 		}
 		that.tableHeader += "<td>actions</td>";
@@ -91,6 +101,10 @@ Requests.prototype.populateTable = function(data)
 		that.table.find('thead').empty().append(that.tableHeader);
 		that.table.append(tableRow);
 	}
+	}
+	else{
+	that.table.find('tbody').append("<td>"+requests+"</td>");
+	}
 
 	that.table.fadeIn();
 }
@@ -98,6 +112,7 @@ Requests.prototype.populateTable = function(data)
 Requests.prototype.clearTable = function()
 {
 	that.table.fadeOut();
+	that.table.find('thead').empty();
 	that.table.find('tbody').empty();
 }
 

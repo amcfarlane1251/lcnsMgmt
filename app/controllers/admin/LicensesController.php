@@ -990,6 +990,6 @@ class LicensesController extends AdminController
 
     protected function checkin($licenseSeat)
     {
-        return LicenseSeat::checkIn($licenseSeat);
+        return LicenseSeat::checkInRequest($licenseSeat);
     }
 }

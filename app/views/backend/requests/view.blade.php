@@ -26,14 +26,15 @@
 			@endif
 		</div>
 		<div>
-			<label>@lang('request.requester'):</label> {{$request->owner->first_name." ".$request->owner->last_name}} 
+			<label>@lang('general.ec'):</label> {{$request->roles->role}}
 		</div>
 		<div>
 			<label>@lang('general.unit'):</label> {{$request->unit->name}}
 		</div>
 		<div>
-			<label>@lang('general.ec'):</label> {{$request->roles->role}}
+			<label>@lang('request.requester'):</label> {{$request->owner->first_name." ".$request->owner->last_name}} 
 		</div>
+		
 		@if($request->pc_name)
 			<label>@lang('request.pcName'):</label> {{$request->pc_name}}
 		@endif
