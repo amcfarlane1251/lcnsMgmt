@@ -10,11 +10,7 @@
 @section('content')
 	<div class="page-header">
         <div class="pull-right">
-        	@if(Request::is('request?reqCode=closed'))
-	            <a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('request?roleId='.$roleId) }}">@lang('request.open')</a>
-        	@else
-        		<a id="request-status" class="pull-right btn btn-default" href="{{ URL::to('request?reqCode=closed&roleId='.$roleId) }}">@lang('request.closed')</a>
-        	@endif
+        	<a href="{{URL::to('request/create?type=license')}}" class="btn btn-primary">New Request</a>
         </div>
         <h3> @if(Request::is('request?reqCode=closed')) @lang('request.open') @else @lang('request.open') @endif </h3>
 	</div>

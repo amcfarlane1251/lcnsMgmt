@@ -48,7 +48,7 @@ class LicenseSeat extends Elegant
             'type' => 'checkin',
         );
 
-        if( $request->store($params) ) {
+        if( $request->dbStore($params) ) {
             return array('success'=>1, 'message'=>Lang::get('license:checkin:success'));
         }
         return array('error'=>1, 'message'=>Lang::get('license:checkin:error'));
@@ -56,8 +56,8 @@ class LicenseSeat extends Elegant
 
     public function checkIn()
     {
-        $this->asset_id = '';
-        $this->assigned_to = '';
+        $this->asset_id = NULL;
+        $this->assigned_to = NULL;
         $this->save();
     }
 }

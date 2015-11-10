@@ -12,20 +12,16 @@
         <div class="pull-right">
             <a href="{{ URL::previous() }}" class="btn-flat gray"><i class="fa fa-arrow-left icon-white"></i>  @lang('general.back')</a>
         </div>
-        @if($isApprover)
-			<h3> @lang('request.approveLicense') </h3>
-    	@else
-        	<h3> @lang('request.requestLicense') </h3>
-        @endif
+		@if($action=='PUT')
+			<h3>@lang('request.edit')</h3>
+		@else
+			<h3> @lang('request.requestLicense') </h3>
+		@endif
 	</div>
 
 	<div class="row form-wrapper">
 		<div class="col-md-12 column">
-			@if($isApprover)
-				{{ Form::open(array('class'=>'form-horizontal')) }}
-			@else
-				{{ Form::open(array('url'=>'request','class'=>'form-horizontal')) }}
-			@endif
+			{{ Form::open(array('url'=>'request/'.$request->id,'class'=>'form-horizontal', 'method'=>$action)) }}
 			<h3>@Lang('request.formSection')</h3>
 			{{-- Unit --}}
 			<div class="form-group {{ $errors->has('unit') ? 'has-error' : '' }}">
@@ -75,7 +71,7 @@
 			</div>
 
 			{{-- PC Name --}}
-			<div class="form-group {{ $errors->has('pcName') ? 'has-error' : 'hidden' }} " data-toggle='pcName'>
+			<div class="form-group {{ $errors->has('pcName') || in_array('SABA Publisher',$request->licenseTypes()->lists('name')) ? '' : 'hidden' }} " data-toggle='pcName'>
 				<div class="col-md-2">
 					{{ Form::label('pcName', Lang::get('request.pcName'), array('class'=>'control-label')) }}
 				</div>
@@ -86,7 +82,7 @@
 			</div>
 
 			{{-- Account --}}
-			<div class="{{array_key_exists('lcnsTypes',Input::old()) ? '' : 'hidden' }}" data-toggle='accountInfo'>
+			<div class="{{array_key_exists('lcnsTypes',Input::old()) || isset($assignedLcns) ? '' : 'hidden' }}" data-toggle='accountInfo'>
 				<h3>@Lang('account.formSection')</h3>
 				<div class="btn-group" role="group" id="user-select">
 					<h5>@Lang('account.selectOption')</h5>
@@ -129,22 +125,11 @@
 				</div>
 			</div>
 
-			@if(isset($approver))
-				<div class="form-group">
-					<div class="col-md-2">
-						{{ Form::label('approve', Lang::get('request.approve'), array('class'=>'control-label')) }}
-					</div>
-					<div class="col-md-4">
-						{{ Form::select('approve', array('0' => 'No', '1' => 'Yes'), 1) }}
-					</div>
-				</div>
-			@endif
-
 			<div class="hidden">
 				<input type="hidden" value="{{$type}}" name="type" id="type"/>
 			</div>
 			<div class="hidden">
-				<input type="hidden" value="{{Input::old('userStatus')}}" name="userStatus" id="userStatus"/>
+				<input type="hidden" value="{{(isset($userStatus) ? $userStatus : Input::old('userStatus'))}}" name="userStatus" id="userStatus"/>
 			</div>
 			{{ Form::submit('Submit Request') }}
 		</div>
@@ -160,10 +145,13 @@
 			toggleHelper3 = new ToggleHelper('lcnsContainer','SABA Publisher','accountInfo',shared);
 			toggleHelper3.init();
 
+			var pcNameDOM = $('#pcName');
 			var usernameDOM = $('#username');
 			var firstNameDOM = $('#firstName');
 			var lnameDOM = $('#lname');
 			var users;
+
+			pcNameDOM.mask('?***-***-*******');
 			var req = $.ajax({
 				url:'../accounts',
 				success:function(data){

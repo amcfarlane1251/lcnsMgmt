@@ -126,7 +126,7 @@ class RequestsController extends \BaseController {
 				->with('units', $unit)
 				->with('lcnsTypes', $lcnsTypes)
 				->with('type',$type)
-				->with('isApprover', false);
+				->with('action', 'POST');
 		}
 		elseif($type=='account') {
 			//define array of employee types
@@ -138,7 +138,7 @@ class RequestsController extends \BaseController {
 				->with('ec', $ec)
 				->with('units', $unit)
 				->with('empTypes', $empTypes)
-				->with('isApprover', false);
+				->with('action', 'POST');
 		}
 	}
 
@@ -159,13 +159,9 @@ class RequestsController extends \BaseController {
         }
 
 		//get common variables
+		$reqParams = $this->formatReqParams(Input::all());
+
 		$type = Input::get('type');
-		$unit = Input::get('unit');
-		$ec = Input::get('ec');
-		$requesterId = Sentry::getUser()->id;
-		$firstName = Input::get('firstName');
-		$lname = Input::get('lname');
-		$username = Input::get('username');
 		$userStatus = Input::get('userStatus');
 
 		if($type=='account') {
@@ -213,56 +209,14 @@ class RequestsController extends \BaseController {
 			$pcName = Input::get('pcName');
 			$lcnsTypes = Input::get('lcnsTypes');
 
-	        $request = new Request();
-	        //fill request obj with common fields
-	        $reqParams = array(
-	        	'user_id'=>Sentry::getUser()->id,
-	        	'unit_id'=>$unit,
-	        	'role_id'=>$ec,
-	        	'type'=>$type,
-	        );
 	        //fill account obj with common fields
-	        $accountParams = array(
-	        	'first_name'=> $firstName,
-	        	'last_name'=>$lname,
-	        	'username'=>$username,
-	        );
+	        $accountParams = $this->formatAccntParams(Input::all());
 
 	        $request = Request::withParams($reqParams);
-
-	        foreach($lcnsTypes as $typeId) {
-	        	if(LicenseType::find($typeId)->name =='SABA Publisher'){
-	        		$request->pc_name = $pcName;
-	        		$return = $request->validation();
-	        		if($return) {
-	 					return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
-	 				}	
-	        	}
+	        $return = $request->store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams);
+	        if($return['success']){
+	        	return Redirect::to('request/'.$request->id)->with('success', $return['message']);
 	        }
-
-	 		if($userStatus=='existing') {
-	 			$account = Account::where('username', $username)->first();
-	 			$request->account_id = $account->id;
-	 			$request->store($reqParams);
-	 		}
-	 		else{
- 				$account = Account::withParams($accountParams);
-	 			if($return = $account->validation()) {
-	 				return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
-	 			}
-	 			$account->store();
-	 			$request->account_id = $account->id;
-	 			$account->created_from = $request->store($reqParams);
-    			$account->save();
-	 		}
-
-			//save the license types to the request
-        	foreach($lcnsTypes as $lcnsType){
-        		$request->licenseTypes()->attach($lcnsType);
-        	}
-
-	        $success = Lang::get('admin/request/message.success.create');
-	        return Redirect::to('request/'.$request->id)->with('success', $success);
 	    }
 	}
 
@@ -303,19 +257,11 @@ class RequestsController extends \BaseController {
 			// Redirect to the requests page with error
             return Redirect::to('request')->with('error', Lang::get('admin/hardware/message.not_found'));
 		}
-
-		//check if request is up for approval or not
-		$url = explode('/',$this->httpRequest->url());
-		if($url[count($url)-1] == "approve"){
-			$isApprover = true;
-		}
-		else{
-			$isApprover = false;
-		}
-
+		
 		//get all the environmental commands
 		$ec = Sentry::getUser()->filterRoles();
 		$unit = Sentry::getUser()->filterUnits();
+		$type = $request->type;
 
 		//define array of license types
 		$lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->lists('name', 'id');
@@ -326,9 +272,12 @@ class RequestsController extends \BaseController {
 			->with('request', $request)
 			->with('ec', $ec)
 			->with('lcnsTypes', $lcnsTypes)
+			->with('assignedLcns',$request->licenseTypes())
 			->with('approver', $approver)
 			->with('units', $unit)
-			->with('isApprover', $isApprover);
+			->with('type', $type)
+			->with('userStatus','existing')
+			->with('action', 'put');
 	}
 
 
@@ -340,12 +289,29 @@ class RequestsController extends \BaseController {
 	 */
 	public function update($id)
 	{
-		$return = $this->approve($id);
-		if($return['success']){
-			return Redirect::to('request?type='.$return['type'])->with('success', $return['message']);
+		$request = Request::find($id);
+		//return resource not found if there is no request
+		if(!$request){
+			header(' ', true, 404);
+			return Redirect::to('request')->with('error', 'Request not found.');
+		}
+
+		if(Input::get('action')=='approve') {
+			$return = $request->approve();
 		}
 		else{
-			return Redirect::to('request?type='.$return['type'])->with('error', $return['message']);
+			$lcnsTypes = Input::get('lcnsTypes');
+			$reqParams = $this->formatReqParams(Input::all());
+			$userStatus = Input::get('userStatus');
+			$pcName = Input::get('pcName');
+			$accountParams = $this->formatAccntParams(Input::all());
+			$return = $request->store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams);
+		}
+		if($return['success']){
+				return Redirect::to('request?type='.$return['type'])->with('success', $return['message']);
+			}
+			else{
+				return Redirect::back()->withErrors($return['message'])->with('status',$userStatus)->withInput();
 		}
 	}
 
@@ -408,13 +374,25 @@ class RequestsController extends \BaseController {
 	 */
 	public function approve($id)
 	{
-		$request = Request::find($id);
-		//return resource not found if there is no request
-		if(!$request){
-			header(' ', true, 404);
-			return Redirect::to('request')->with('error', 'Request not found.');
-		}
-
 		return $request->approve();
+	}
+
+	private function formatReqParams($input)
+	{	
+		return array(
+			'user_id'=>Sentry::getUser()->id,
+        	'unit_id'=>$input['unit'],
+        	'role_id'=>$input['ec'],
+        	'type'=>$input['type'],
+		);
+	}
+
+	private function formatAccntParams($input)
+	{
+		return array(
+			'first_name'=>$input['firstName'],
+			'last_name'=>$input['lname'],
+			'username'=>$input['username']
+		);
 	}
 }

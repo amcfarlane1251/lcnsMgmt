@@ -92,7 +92,52 @@ class Requests extends Elegant
 		}
 	}
 
-	public function store($values)
+	public function store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams)
+	{	
+            foreach($lcnsTypes as $typeId) {
+                if(LicenseType::find($typeId)->name =='SABA Publisher'){
+                    $this->pc_name = $pcName;
+                    $return = $this->validation();
+                    if($return) {
+                        return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
+                    }	
+                }
+            }
+
+            if($userStatus=='existing') {
+                $account = Account::where('username', $accountParams['username'])->first();
+                $this->account_id = $account->id;
+                $this->dbStore($reqParams);
+            }
+            else{
+                $account = Account::withParams($accountParams);
+                if($return = $account->validation()) {
+                        return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
+                }
+                $account->store();
+                $this->account_id = $account->id;
+                $account->created_from = $this->dbStore($reqParams);
+                $account->save();
+            }
+
+            //license types to be added
+            foreach($lcnsTypes as $lcnsType){
+                if(!in_array($lcnsType, $this->licenseTypes()->lists('id'))) {
+                    $this->licenseTypes()->attach($lcnsType);
+                }
+            }
+            //license types to be removed
+            foreach($this->licenseTypes()->lists('id') as $id){
+                if(!in_array($id, $lcnsTypes)) {
+                    $this->licenseTypes()->detach($id);
+                }
+            }
+
+            $success = Lang::get('admin/request/message.success.create');
+            return array('success'=>1,'message'=>$success,'type'=>$this->type);
+	}
+	
+	public function dbStore($values)
 	{
 		foreach($values as $key=>$value){
 			$this->$key = $value;
