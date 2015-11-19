@@ -59,7 +59,7 @@
 	<div class="col-lg-12">
 		{{ Form::open(array('url'=>'request/'.$request->id, 'method'=>'PUT')) }}
 		<input type="hidden" name="action" value="approve"/>
-		{{ Form::submit('Approve Request', array('class'=>'btn btn-approve')) }}
+		{{ Form::submit('Approve Request', array('class'=>'btn btn-success')) }}
 	</div>
 </div>
 @stop

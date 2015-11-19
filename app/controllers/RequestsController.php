@@ -42,6 +42,7 @@ class RequestsController extends \BaseController {
 		//get user role
 		$user = Sentry::getUser();
 		$role = $user->role;
+	
 		//get URL params
 		(Input::get('reqCode') ? $reqCode = Input::get('reqCode') : $reqCode = '');
 		(Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = $role->id);
@@ -51,7 +52,7 @@ class RequestsController extends \BaseController {
 			return Redirect::to('/')->with('error', 'Cannot access that EC');
 		}
 		if($role->role == 'All') {
-			if(!$reqCode){$reqCode = 1;}
+			if(!$reqCode){$reqCode = 1;} //ASAP
 			if($roleId==1){$roleId='';}
 		}
 		//get the requests
@@ -70,21 +71,31 @@ class RequestsController extends \BaseController {
 				$return[$key]->unit = $request->unit->name;
 				$return[$key]->role = $request->roles->role;
 				$request->account ? $return[$key]->name = $request->account->first_name." ".$request->account->last_name : $return[$key]->name = '';
+				
 				if($type=='license') {
 					$return[$key]->lcnsTypes =  $request->licenseTypes;
 				}
 				elseif($type=='checkin') {
 					$return[$key]->lcnsName = $request->licenseSeat->license->name;
 				}
+				
 				$return[$key]->created_at = (string)$request->created_at;
-				if($requests[$key]->request_code != 'closed'){
-					if($user->hasAccess('authorize') || $user->role->id == $requests[$key]->role_id){
-						$return[$key]->actions = "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
-						$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='delete-request'><i class='fa fa-trash icon-white'></i></a>";
-					}
-					if($user->hasAccess('authorize')){
-						$return[$key]->actions .= "<a href=" .URL::to('request/'.$request->id.'/approve'). "><i class='fa fa-check icon-blue'></i></a>";
-					}
+				$return[$key]->actions = '';
+				
+				//delete
+				if( $user->role->id == $requests[$key]->role_id || in_array('Authorizers',$user->group()) ) {
+					$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='delete-request'><i class='fa fa-trash icon-white'></i></a>";
+				}
+				elseif( in_array('Admin',$user->group()) ){
+					$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='delete-request'><i class='fa fa-trash icon-white'></i></a>";
+				}
+				//edit
+				if( ($user->hasAccess('authorize') || $user->role->id == $requests[$key]->role_id) && empty($request->request_code) ){
+					$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id.'/edit')."><i class='fa fa-pencil icon-white'></i></a>";
+				}
+				//approve
+				if( (in_array('Authorizers',$user->group()) && empty($request->request_code)) || (in_array('Admin',$user->group()) && $request->request_code==1) ) {
+					$return[$key]->actions .= "<a href=" .URL::to('request/'.$request->id.'/approve'). "><i class='fa fa-check icon-blue'></i></a>";
 				}
 			}
 			if(!$return){$return="No requests found";}

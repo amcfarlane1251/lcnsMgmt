@@ -23,7 +23,27 @@ class User extends SentryUserModel
     {
         return "{$this->first_name} {$this->last_name}";
     }
-    
+
+    /**
+     * Returns array of strings of groups a user belongs.
+     *
+     * @return array
+     */
+	public function group()
+	{
+		$groups = array();
+		$groups[] = Sentry::findGroupByName('Authorizers');
+		$groups[] = Sentry::findGroupByName('Admin');
+		
+		$return = array();
+		foreach($groups as $group) {
+			if($this->inGroup($group)) {
+				$return[] = $group->name;
+			}
+		}
+		return $return;
+	}
+	
     /**
      * Returns the user Gravatar image url.
      *
