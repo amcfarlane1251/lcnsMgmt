@@ -113,13 +113,13 @@
 						</div>
 					</div>
 
-					<div class="form-group {{ $errors->has('lname') ? 'has-error' : '' }}">
+					<div class="form-group {{ $errors->has('lastName') ? 'has-error' : '' }}">
 						<div class="col-md-2 clearfix">
-							{{ Form::label('lname', Lang::get('account.lastName'), array('class'=>'control-label')) }}
+							{{ Form::label('lastName', Lang::get('account.lastName'), array('class'=>'control-label')) }}
 						</div>
 						<div class="col-md-4">
-							{{ Form::text('lname', ($request->account ? $request->account->last_name : ''), array('class'=>'form-control','readonly'=>'true')) }}
-							{{ $errors->first('lname', '<br><span class="alert-msg">:message</span>') }}
+							{{ Form::text('lastName', ($request->account ? $request->account->last_name : ''), array('class'=>'form-control','readonly'=>'true')) }}
+							{{ $errors->first('lastNname', '<br><span class="alert-msg">:message</span>') }}
 						</div>
 					</div>
 				</div>

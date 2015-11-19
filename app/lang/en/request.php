@@ -30,6 +30,9 @@ return array(
 	'message.success.create' => 'Your request has been submitted',
 	'message.success.delete' => 'The request has been removed',
 
+	'userInfo'		=> 'User Information',
+	'unitInfo'		=> 'Unit Information',
+	
 	'requester' => 'Requester',
 	'pcName' => 'Computer Name',
 	'ec' => 'Environmental Command',

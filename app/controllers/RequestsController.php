@@ -10,6 +10,7 @@ use Input;
 use Lang;
 use License;
 use LicenseType;
+use Location;
 use Redirect;
 use Requests as Request;
 use Response;
@@ -30,10 +31,6 @@ class RequestsController extends \BaseController {
      *
      * @var array
      */
-    protected $validationRules = array(
-        'ec'      		=> 'required',
-        'lcnsTypes' 	=> 'required',
-    );
 
  	/**
 	 * Display a listing of requests.
@@ -114,7 +111,8 @@ class RequestsController extends \BaseController {
 		if(!$type){$type='license';}
 		//get all the environmental commands
 		$ec = Sentry::getUser()->filterRoles();
-		$unit = Sentry::getUser()->filterUnits();
+		$units = Sentry::getUser()->filterUnits();
+		$locations = Location::lists('name', 'id');
 
 		if($type=='license') {
 			//define array of license types
@@ -123,7 +121,7 @@ class RequestsController extends \BaseController {
 			return View::make('backend/requests/license/edit')
 				->with('request',new Request)
 				->with('ec', $ec)
-				->with('units', $unit)
+				->with('units', $units)
 				->with('lcnsTypes', $lcnsTypes)
 				->with('type',$type)
 				->with('action', 'POST');
@@ -136,7 +134,8 @@ class RequestsController extends \BaseController {
 				->with('request',new Request)
 				->with('account', new Account)
 				->with('ec', $ec)
-				->with('units', $unit)
+				->with('units', $units)
+				->with('locations', $locations)
 				->with('empTypes', $empTypes)
 				->with('action', 'POST');
 		}
@@ -149,68 +148,33 @@ class RequestsController extends \BaseController {
 	 */
 	public function store()
 	{
-		// Create a new validator instance from our validation rules
-        $validator = Validator::make(Input::all(), $this->validationRules);
-
-        //TODO: check if request is JSON or HTML content-type
-        if($validator->fails()){
-        	// Ooops.. something went wrong
-            return Redirect::back()->withInput()->withErrors($validator);
-        }
-
-		//get common variables
+		//get request variables
 		$reqParams = $this->formatReqParams(Input::all());
-
 		$type = Input::get('type');
 		$userStatus = Input::get('userStatus');
+		$accountParams = $this->formatAccntParams(Input::all(), $type);
 
 		if($type=='account') {
-			//account variables
-			$email = Input::get('email');
-			$empType = Input::get('empType');
-			$empNum = Input::get('empNum');
-			$location = Input::get('location');
+			$account = Account::withParams($accountParams);
+			$return = $account->store();
 			
-			$request = new Request();
-			$account = new User();
-
-			$requestValues = array(
-				'role_id' => $ec,
-				'user_id' => $requesterId,
-				'type' => $type,
-			);
-
-			$accountValues = array(
-				'role_id' => $ec,
-				'first_name' => $firstName,
-				'last_name' => $lname,
-				'password' => 'default',
-				'activated' => 0,
-				'email' => $email,
-				'emp_types_id' => $empType,
-				'employee_num' => $empNum,
-				'location_id' => $location
-			);
-
-			try{
-				$request->createForAccount($requestValues);
-
-				$accountValues['request_id'] = $request->id;
-				$account->createAccount($accountValues);
+			//validation did not pass
+			if(!is_array($return)) {
+				return Redirect::back()->withErrors($return)->withInput();
 			}
-			catch(Exception $e) {
-				echo 'Caught exception: ', $e->getMessage(), "\n";
+			$reqParams['account_id'] = $account->id;
+			$request = Request::withParams($reqParams);
+			$request->dbStore();
+			
+			$account->created_from = $request->id;
+			$account->save();
+			if($return['success']){
+				return Redirect::to('request/'.$request->id)->with('success', $return['message']);
 			}
-			$success = Lang::get('admin/request/message.success.create');
-			return Redirect::to('request/'.$request->id)->with('success', $success);
 		}
-
 		elseif($type=='license') {
 			$pcName = Input::get('pcName');
 			$lcnsTypes = Input::get('lcnsTypes');
-
-	        //fill account obj with common fields
-	        $accountParams = $this->formatAccntParams(Input::all());
 
 	        $request = Request::withParams($reqParams);
 	        $return = $request->store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams);
@@ -237,7 +201,8 @@ class RequestsController extends \BaseController {
 		}
 
 		if($request->type=='account') {
-			return View::make('backend/requests/accounts/view')->with('request', $request);
+			$account = $request->account()->first();
+			return View::make('backend/requests/accounts/view')->with('request', $request)->with('account',$account);
 		}
 		else{
 			return View::make('backend/requests/view')->with('request', $request);
@@ -304,7 +269,7 @@ class RequestsController extends \BaseController {
 			$reqParams = $this->formatReqParams(Input::all());
 			$userStatus = Input::get('userStatus');
 			$pcName = Input::get('pcName');
-			$accountParams = $this->formatAccntParams(Input::all());
+			$accountParams = $this->formatAccntParams(Input::all(), 'license');
 			$return = $request->store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams);
 		}
 		if($return['success']){
@@ -362,8 +327,13 @@ class RequestsController extends \BaseController {
 			header(' ', true, 404);
 			return Redirect::to('request')->with('error', 'Request not found.');
 		}
-
-		return View::make('backend/requests/license/approve')->with('request',$request);
+		if($request->type=='account') {
+			$account = $request->account()->first();
+			return View::make('backend/requests/accounts/approve')->with('request',$request)->with('account',$account);
+		}
+		elseif($request->type=='license') {
+			return View::make('backend/requests/license/approve')->with('request',$request);
+		}
 	}
 
 	/**
@@ -387,12 +357,29 @@ class RequestsController extends \BaseController {
 		);
 	}
 
-	private function formatAccntParams($input)
+	private function formatAccntParams($input, $type)
 	{
-		return array(
-			'first_name'=>$input['firstName'],
-			'last_name'=>$input['lname'],
-			'username'=>$input['username']
-		);
+		if($type=='account'){
+			return array(
+				'first_name'=>$input['firstName'],
+				'last_name'=>$input['lastName'],
+				'username'=>$input['username'],
+				'email'=>$input['email'],
+				'emp_type_id'=>$input['empType'],
+				'emp_num'=>$input['empNum'],
+				'dob'=>$input['dob'],
+				'sfn'=>$input['sfn'],
+				'role_id'=>$input['ec'],
+				'unit_id'=>$input['unit'],
+				'location_id'=>$input['location'],
+			);
+		}
+		elseif($type=='license') {
+			return array(
+				'first_name'=>$input['firstName'],
+				'last_name'=>$input['lastName'],
+				'username'=>$input['username'],
+			);
+		}
 	}
 }

@@ -390,6 +390,7 @@
         </div>
     </div>
 
+	@section('scripts')
     <!-- scripts -->
     <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.knob.js') }}"></script>
@@ -411,5 +412,6 @@
 			});
 		});
 	</script>
+	@show
     </body>
 </html>

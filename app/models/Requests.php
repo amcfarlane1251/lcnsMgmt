@@ -17,7 +17,15 @@ class Requests extends Elegant
 	{
 		return $this->belongsTo('User', 'user_id');
 	}
+	
+	public function account() {
+		return $this->belongsTo('Account', 'account_id', 'id');
+	}
 
+	public function authorizer() {
+		return $this->belongsTo('User', 'authorizer_id', 'id');
+	}
+	
 	public function roles()
 	{
 		return $this->belongsTo('Role', 'role_id');
@@ -26,10 +34,6 @@ class Requests extends Elegant
 	public function unit()
 	{
 		return $this->belongsTo('Unit', 'unit_id');
-	}
-
-	public function account() {
-		return $this->belongsTo('Account', 'account_id', 'id');
 	}
 
 	protected function accountCreator()
@@ -137,12 +141,8 @@ class Requests extends Elegant
             return array('success'=>1,'message'=>$success,'type'=>$this->type);
 	}
 	
-	public function dbStore($values)
+	public function dbStore()
 	{
-		foreach($values as $key=>$value){
-			$this->$key = $value;
-		}
-
 		try{
 			$this->save();
 		}
