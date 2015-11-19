@@ -16,6 +16,7 @@ Requests.prototype.setProperties = function()
 	this.tableRow = '';
 	this.deleteBtn = '.delete-request';
 	this.toggleBtn = '.btn-group button';
+        this.clear = false;
 	
 	that = this;
 }
@@ -33,20 +34,24 @@ Requests.prototype.populateRequests = function()
 }
 
 Requests.prototype.toggleTypes = function(e)
-{
-	e.preventDefault() ? e.preventDefault() : e.returnValue = false;
-	$(this).siblings('.active').removeClass('active');
-	$(this).addClass('active');
-	
-	var url = $(this).data('url');
-	//var type = $(this).data('type');
-	that.reqType = $(this).data('type');
-	that.clearTable();
-	that.getRequests();
+{   
+    if(that.clear){
+        e.preventDefault() ? e.preventDefault() : e.returnValue = false;
+        $(this).siblings('.active').removeClass('active');
+        $(this).addClass('active');
+
+        var url = $(this).data('url');
+        //var type = $(this).data('type');
+        that.reqType = $(this).data('type');
+        that.clearTable(function(){
+           that.clear = false;
+           that.getRequests();
+        });
+    }
 }
 
 Requests.prototype.getRequests = function()
-{	
+{
 	$.ajax({
 		url:that.url,
 		data:{
@@ -57,6 +62,7 @@ Requests.prototype.getRequests = function()
 		dataType:'json',
 		success:function(data){
 			that.populateTable(data);
+                        that.clear = true;
 		}
 	});
 }
@@ -109,11 +115,11 @@ Requests.prototype.populateTable = function(data)
 	that.table.fadeIn();
 }
 
-Requests.prototype.clearTable = function()
+Requests.prototype.clearTable = function(_callback)
 {
 	that.table.fadeOut();
 	that.table.find('thead').empty();
-	that.table.find('tbody').empty();
+	$.when(that.table.find('tbody').empty()).then(_callback());
 }
 
 Requests.prototype.delete = function(e)
