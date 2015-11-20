@@ -305,7 +305,7 @@ class License extends Depreciable
                 $lcnsObj[$key]->assignedAsset = $asset->name." - ".$asset->asset_tag;
             }
             if($request = $seat->request) {
-                if($request->request_code != 2){$lcnsObj[$key]->request = true;}
+                if($request->request_code != 2){$lcnsObj[$key]->request = $request;}
             }
         }
 
