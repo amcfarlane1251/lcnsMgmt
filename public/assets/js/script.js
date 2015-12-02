@@ -30,6 +30,7 @@ $(function(){
 		confirmButtonClass: "btn-danger",
     	cancelButtonClass: "btn-default",
 	});
+        
 	//checkin a license via ajax and update the display listing
 	function checkin(b)
 	{
@@ -42,6 +43,7 @@ $(function(){
 			success:function(data){
 				data = JSON.parse(data);
 				if(data.success) {
+                                        console.log(data);
 					updateRow(b);
 				}
 			},

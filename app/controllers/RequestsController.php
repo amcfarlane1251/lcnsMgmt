@@ -342,7 +342,7 @@ class RequestsController extends \BaseController {
 			$account = $request->account()->first();
 			return View::make('backend/requests/accounts/approve')->with('request',$request)->with('account',$account);
 		}
-		elseif($request->type=='license') {
+		elseif($request->type=='license' || $request->type=='checkin') {
 			return View::make('backend/requests/license/approve')->with('request',$request);
 		}
 	}
