@@ -54,13 +54,15 @@
     @if($user->hasAccess('authorize'))
     	<div class="row stats-row">
     		@foreach($ec as $key => $role)
-                @if($user->role->role == $role || $user->role->role == "All")
-    			<div class=" {{$user->role->role == $role ? 'col-md-12' : 'col-md-4 col-sm-4'}} stat">
-    				<div class="data">
-    					<a href="{{ URL::to('dashboard/'.$key) }}"> {{ $role }} Dashboard </a>
-    				</div>
-    			</div>
-                @endif
+				@if($role!='All')
+					@if($user->role->role == $role || $user->role->role == "All")
+					<div class=" {{$user->role->role == $role ? 'col-md-12' : 'col-md-4 col-sm-4'}} stat">
+						<div class="data">
+							<a href="{{ URL::to('dashboard/'.$key) }}"> {{ $role }} Dashboard </a>
+						</div>
+					</div>
+					@endif
+				@endif
     		@endforeach
     	</div>
     @endif

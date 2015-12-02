@@ -89,10 +89,10 @@ class Requests extends Elegant
 	public static function retrieve($roleId = null, $reqCode, $type)
 	{	
 		if($roleId){
-			return Requests::where('request_code',$reqCode)->where('role_id', $roleId)->where('type', $type)->orderBy('created_at','desc')->get();
+			return Requests::where('role_id', $roleId)->where('type', $type)->orderBy('created_at','desc')->get();
 		}
 		else{
-			return Requests::where('request_code',$reqCode)->where('type', $type)->orderBy('created_at','desc')->get();
+			return Requests::where('type', $type)->orderBy('created_at','desc')->get();
 		}
 	}
 

@@ -38,7 +38,6 @@ class LicenseSeat extends Elegant
     {
         //create a request for the check-in
         $user = Sentry::getUser();
-        $request = new Requests();
         $params = array(
             'license_id' => $seat->id,
             'user_id' => $user->id,
@@ -47,8 +46,9 @@ class LicenseSeat extends Elegant
             'unit_id' => $user->unit_id,
             'type' => 'checkin',
         );
+		$request = Requests::withParams($params);
 
-        if( $request->dbStore($params) ) {
+        if( $request->dbStore() ) {
             return array('success'=>1, 'message'=>Lang::get('license:checkin:success'));
         }
         return array('error'=>1, 'message'=>Lang::get('license:checkin:error'));

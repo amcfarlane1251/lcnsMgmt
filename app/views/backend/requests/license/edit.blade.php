@@ -148,7 +148,7 @@
 			var pcNameDOM = $('#pcName');
 			var usernameDOM = $('#username');
 			var firstNameDOM = $('#firstName');
-			var lnameDOM = $('#lname');
+			var lnameDOM = $('#lastName');
 			var users;
 
 			pcNameDOM.mask('?***-***-*******');
@@ -214,7 +214,7 @@
 									$(this).blur();
 
 									$('#firstName').val(ui.item.firstName).prop('readonly', true);
-									$('#lname').val(ui.item.lastName).prop('readonly', true);
+									$('#lastName').val(ui.item.lastName).prop('readonly', true);
 									$('#account-id').removeClass('hidden');
 									$('#account-id').attr('data-account', ui.item.accountId);
 
@@ -236,7 +236,7 @@
 						    // Do action
 						    //usernameDOM.val('').prop('readonly', false);
 							$('#firstName').val('');
-							$('#lname').val('');
+							$('#lastName').val('');
 							$('#account-id').addClass('hidden');
 							$('#account-id').attr('data-account', '');
 						}
