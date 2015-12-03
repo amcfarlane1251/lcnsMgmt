@@ -140,6 +140,7 @@ Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), 
  **/
 Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
     Route::resource('request', 'RequestsController');
+	Route::resource('license_types', 'LicenseTypeController');
 });
 
 Route::get('request/{id}/approve', array('uses' => 'Controllers\RequestsController@approvalForm', 'before' => 'authorizer-auth'));
