@@ -145,6 +145,11 @@
                             <i class="fa fa-user"></i>
                             @lang('general.user')</a>
                         </li>
+						<li {{{ (Request::is('license_types/create') ? 'class="active"' : '') }}}>
+                            <a href="{{ URL::to('license_types/create') }}">
+                            <i class="fa fa-certificate"></i>
+							License Type</a>
+                        </li>
                     </ul>
                 </li>
                 @endif
