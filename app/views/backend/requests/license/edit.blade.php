@@ -71,7 +71,7 @@
 			</div>
 
 			{{-- PC Name --}}
-			<div class="form-group {{ $errors->has('pcName') || in_array('SABA Publisher',$request->licenseTypes()->lists('name')) ? '' : 'hidden' }} " data-toggle='pcName'>
+			<div class="form-group {{ $errors->has('pcName') || in_array(1,$request->licenseTypes()->lists('asset_flag')) ? '' : 'hidden' }} " data-toggle='pcName'>
 				<div class="col-md-2">
 					{{ Form::label('pcName', Lang::get('request.pcName'), array('class'=>'control-label')) }}
 				</div>

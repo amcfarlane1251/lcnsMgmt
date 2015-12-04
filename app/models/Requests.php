@@ -82,8 +82,10 @@ class Requests extends Elegant
 		$validator = Validator::make(array("pcName"=>$this->pc_name), 
 					  array('pcName' => 'required'));
 		if($validator->fails()) {
-			return $validator->messages();
+			$this->errors = $validator->messages();
+			return false;
 		}
+		return true;
 	}
 
 	public static function retrieve($roleId = null, $reqCode, $type)
@@ -96,49 +98,37 @@ class Requests extends Elegant
 		}
 	}
 
-	public function store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams)
+	public function store($lcnsTypes, $userStatus, $account)
 	{	
-            foreach($lcnsTypes as $typeId) {
-                if(LicenseType::find($typeId)->name =='SABA Publisher'){
-                    $this->pc_name = $pcName;
-                    $return = $this->validation();
-                    if($return) {
-                        return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
-                    }	
-                }
-            }
+		if($userStatus=='existing') {
+			//overide account
+			$account = Account::where('username', $account->username)->first();
+			$this->account_id = $account->id;
+			$this->dbStore();
+		}
+		else{
+			$id = $account->store();
+			
+			$this->account_id = $id;
+			$account->created_from = $this->dbStore();
+			$account->save();
+		}
 
-            if($userStatus=='existing') {
-                $account = Account::where('username', $accountParams['username'])->first();
-                $this->account_id = $account->id;
-                $this->dbStore($reqParams);
-            }
-            else{
-                $account = Account::withParams($accountParams);
-                if($return = $account->validation()) {
-                        return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
-                }
-                $account->store();
-                $this->account_id = $account->id;
-                $account->created_from = $this->dbStore($reqParams);
-                $account->save();
-            }
+		//license types to be added
+		foreach($lcnsTypes as $lcnsType){
+			if(!in_array($lcnsType, $this->licenseTypes()->lists('id'))) {
+				$this->licenseTypes()->attach($lcnsType);
+			}
+		}
+		//license types to be removed
+		foreach($this->licenseTypes()->lists('id') as $id){
+			if(!in_array($id, $lcnsTypes)) {
+				$this->licenseTypes()->detach($id);
+			}
+		}
 
-            //license types to be added
-            foreach($lcnsTypes as $lcnsType){
-                if(!in_array($lcnsType, $this->licenseTypes()->lists('id'))) {
-                    $this->licenseTypes()->attach($lcnsType);
-                }
-            }
-            //license types to be removed
-            foreach($this->licenseTypes()->lists('id') as $id){
-                if(!in_array($id, $lcnsTypes)) {
-                    $this->licenseTypes()->detach($id);
-                }
-            }
-
-            $success = Lang::get('admin/request/message.success.create');
-            return array('success'=>1,'message'=>$success,'type'=>$this->type);
+		$success = Lang::get('admin/request/message.success.create');
+		return array('success'=>1,'message'=>$success,'type'=>$this->type);
 	}
 	
 	public function dbStore()
@@ -196,7 +186,9 @@ class Requests extends Elegant
 				}
 
 				foreach($toAdd as $key=>$lcnsSeat){
-					if($key == 'SABA Publisher') {
+					$modelObj = LicenseSeat::find($lcnsSeat->id);
+					$type = $modelObj->getLicenseType();
+					if($type->asset_flag) {
 						//create computer name as an asset if it doesnt exist
 						if($obj = DB::table('assets')->where('serial', $this->pc_name)->first(array('id'))){
 							$asset = Asset::find($obj->id);

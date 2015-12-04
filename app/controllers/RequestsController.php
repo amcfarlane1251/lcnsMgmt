@@ -167,28 +167,40 @@ class RequestsController extends \BaseController {
 
 		if($type=='account') {
 			$account = Account::withParams($accountParams);
-			$return = $account->store();
-			
-			//validation did not pass
-			if(!is_array($return)) {
-				return Redirect::back()->withErrors($return)->withInput();
+			if(!$account->validation()) {
+				return Redirect::back()->withErrors($account->errors)->withInput();
 			}
+			$account->store();
+			
 			$reqParams['account_id'] = $account->id;
 			$request = Request::withParams($reqParams);
 			$request->dbStore();
 			
 			$account->created_from = $request->id;
 			$account->save();
-			if($return['success']){
-				return Redirect::to('request/'.$request->id)->with('success', $return['message']);
-			}
+			return Redirect::to('request/'.$request->id)->with('success', Lang::get('admin/request/message.success.create'));
 		}
 		elseif($type=='license') {
 			$pcName = Input::get('pcName');
 			$lcnsTypes = Input::get('lcnsTypes');
-
 	        $request = Request::withParams($reqParams);
-	        $return = $request->store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams);
+			$account = Account::withParams($accountParams);
+			//validate request
+			foreach($lcnsTypes as $typeId) {
+				if(LicenseType::find($typeId)->asset_flag){
+					if(!$request->validation()) {
+						return Redirect::back()->withErrors($request->errors)->with('status',$userStatus)->withInput();
+					}
+				}
+			}
+			//validate the account
+			if($userStatus!='existing') {
+				if(!$account->validation()) {
+					return Redirect::back()->withErrors($account->errors)->with('status',$userStatus)->withInput();
+				}
+			}
+			
+	        $return = $request->store($lcnsTypes, $userStatus, $account);
 	        if($return['success']){
 	        	return Redirect::to('request/'.$request->id)->with('success', $return['message']);
 	        }
@@ -365,6 +377,7 @@ class RequestsController extends \BaseController {
         	'unit_id'=>$input['unit'],
         	'role_id'=>$input['ec'],
         	'type'=>$input['type'],
+			'pc_name'=> (isset($input['pcName']) ? $input['pcName'] : ''),
 		);
 	}
 
