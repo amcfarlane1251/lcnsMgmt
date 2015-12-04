@@ -60,4 +60,10 @@ class LicenseSeat extends Elegant
         $this->assigned_to = NULL;
         $this->save();
     }
+	
+	public function getLicenseType()
+	{
+		$typeId = $this->license->type_id;
+		return LicenseType::find($typeId);
+	}
 }
