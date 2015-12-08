@@ -58,7 +58,12 @@ class LicensesController extends AdminController
         }
 
         //get the licenses object and the role key for language files
-        $licenses = License::getByRole($roleId);
+		if( $user->inGroup(Sentry::findGroupByName('Requestors')) ) {
+			$licenses = License::getByRole($roleId, $user->unit_id);
+		}
+		else{
+			$licenses = License::getByRole($roleId);
+		}
         $roleKey = Role::getRoleById($roleId); $roleKey = $roleKey[0];
 
         if($this->request->ajax())

@@ -403,6 +403,8 @@ class RequestsController extends \BaseController {
 				'first_name'=>$input['firstName'],
 				'last_name'=>$input['lastName'],
 				'username'=>$input['username'],
+				'role_id'=>$input['ec'],
+				'unit_id'=>$input['unit'],
 			);
 		}
 	}

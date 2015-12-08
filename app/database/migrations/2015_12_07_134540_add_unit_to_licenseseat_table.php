@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateRolesTable extends Migration {
+class AddUnitToLicenseseatTable extends Migration {
 
 	/**
 	 * Run the migrations.
@@ -12,12 +12,9 @@ class CreateRolesTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('roles', function(Blueprint $table)
+		Schema::table('license_seats', function(Blueprint $table)
 		{
-			$table->increments('id');
-			$table->string('role');
-			$table->integer('user_id')->unsigned();
-			$table->timestamps();
+			$table->integer('unit_id')->unsigned()->index();
 		});
 	}
 
@@ -28,7 +25,10 @@ class CreateRolesTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('authors');
+		Schema::table('license_seats', function(Blueprint $table)
+		{
+			$table->dropColumn('unit_id');
+		});
 	}
 
 }

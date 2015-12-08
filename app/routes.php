@@ -124,17 +124,6 @@ Route::group(array('prefix' => 'hardware', 'namespace' => 'Controllers\Admin', '
 
 //Custom Routes
 /*
- * Role Routes
- *
- **/
-Route::group(array('before' => 'requestor-auth', 'namespace' => 'Controllers'), function(){
-    //Route::get('role/{id}/request', 'RolesController@indexRequests');
-    Route::get('role/{id}/asset', 'RolesController@indexAssets');
-    Route::get('role/{id}/license', 'RolesController@indexLicenses');
-    Route::resource('role', 'RolesController');
-});
-
-/*
  * Request Routes
  *
  **/
@@ -440,6 +429,6 @@ Route::group(array('before' => 'reporting-auth', 'namespace' => 'Controllers\Adm
 
 Route::get('/', array('as' => 'home', 'before' => 'requestor-auth', 'uses' => 'Controllers\DashboardController@dashboardRouter'));
 
-Route::get('dashboard/{ec}', array('as' => 'account', 'before' => 'admin-auth', 'uses' => 'Controllers\DashboardController@getIndex'));
+Route::get('dashboard/{ec}', array('as' => 'account', 'before' => 'authorizer-auth', 'uses' => 'Controllers\DashboardController@getIndex'));
 
 

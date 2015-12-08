@@ -181,24 +181,24 @@ class License extends Depreciable
             ->update(array('asset_id' => $assetId, 'updated_at'=>DB::raw('NOW()')));
     }
 
-    public static function checkOutToAccount($seatId, $accountId){
+    public static function checkOutToAccount($seatId, $accountId, $unitId){
         DB::table('license_seats')
             ->where('id', '=', $seatId)
-            ->update(array('assigned_to' => $accountId));
+            ->update(array('assigned_to' => $accountId, 'unit_id' => $unitId));
     }
 
-    public function populateDashboard($roleId)
+    public function populateDashboard($roleId, $unitId)
     {        
         $licenses = array();
         $lcnsTypes = LicenseType::lists('name', 'id');
         //get the total amount of licenses
-        $totalAlloc = $this->countTotalByRole($roleId);
-        $totalUsed = $this->countUsedByRole($roleId);
-        $totalRemaining = $this->countRemainingByRole($roleId);
+        $totalAlloc = $this->countTotalByRole($roleId, $unitId);
+        $totalUsed = $this->countUsedByRole($roleId, $unitId);
+        $totalRemaining = $this->countRemainingByRole($roleId, $unitId);
 
         foreach($lcnsTypes as $key => $type){
             $allocated = $this->countTotalByType($key, $roleId);
-            $used = $this->countUsedByType($key, $roleId);
+            $used = $this->countUsedByType($key, $roleId, $unitId);
             $remaining = $this->countRemainingByType($key, $roleId);
 
             $licenses[$key] = new \stdClass();
@@ -218,7 +218,7 @@ class License extends Depreciable
         return $licenses;
     }
 
-    public function countTotalByType($typeId, $roleId = null){
+    public function countTotalByType($typeId, $roleId = null, $unitId = null){
         return DB::table('licenses')
             ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
             ->orwhere(function($query) use ($typeId, $roleId){
@@ -227,12 +227,13 @@ class License extends Depreciable
             })->count();
     }
 
-    public function countUsedByType($typeId, $roleId = null){
+    public function countUsedByType($typeId, $roleId = null, $unitId = null){
         return DB::table('licenses')
             ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
-            ->orwhere(function($query) use ($typeId, $roleId){
+            ->orwhere(function($query) use ($typeId, $roleId, $unitId){
                 $query->where('licenses.type_id', $typeId)
                       ->where('licenses.role_id', $roleId)
+					  ->where('license_seats.unit_id', $unitId)
                       ->whereNotNull('license_seats.assigned_to');
             })->count();
     }
@@ -256,12 +257,13 @@ class License extends Depreciable
             })->count();
     }
 
-    public function countUsedByRole($roleId){
+    public function countUsedByRole($roleId, $unitId = null){
         return DB::table('licenses')
             ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
-            ->orwhere(function($query) use ($roleId){
+            ->orwhere(function($query) use ($roleId, $unitId){
                 $query->where('licenses.role_id', $roleId)
-                ->whereNotNull('license_seats.assigned_to');
+					  ->where('license_seats.unit_id', $unitId)
+					  ->whereNotNull('license_seats.assigned_to');
             })->count();
     }
 
@@ -270,20 +272,20 @@ class License extends Depreciable
             ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
             ->orwhere(function($query) use ($roleId){
                 $query->where('licenses.role_id', $roleId)
-                ->whereNull('license_seats.assigned_to');
+					  ->whereNull('license_seats.assigned_to');
             })->count();
     }
 
-    public static function getByRole($roleId)
+    public static function getByRole($roleId, $unitId = null)
     {
-        $licenses = DB::table('licenses')
+        $query = DB::table('licenses')
                         ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
                         ->where('licenses.role_id', $roleId)
                         ->orderBy('license_seats.updated_at', 'DESC')
                         ->orderBy('name', 'ASC')
-                        ->select('licenses.name', 'license_seats.*')
-                        ->get();
-        
+                        ->select('licenses.name', 'license_seats.*');
+		if(isset($unitId)) {$query->where('license_seats.unit_id', $unitId);}
+		$licenses = $query->get();
         $lcnsObj = array();
 
         foreach($licenses as $key => $lcns)
