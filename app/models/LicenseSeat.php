@@ -30,7 +30,6 @@ class LicenseSeat extends Elegant
     //get a request associated with the license seat -> this is for checkin or move requests
     public function request()
     {
-        error_log($this->id);
         return $this->belongsTo('Requests','id', 'license_id');
     }
 
@@ -58,6 +57,13 @@ class LicenseSeat extends Elegant
     {
         $this->asset_id = NULL;
         $this->assigned_to = NULL;
+		$this->unit_id = NULL;
         $this->save();
     }
+	
+	public function getLicenseType()
+	{
+		$typeId = $this->license->type_id;
+		return LicenseType::find($typeId);
+	}
 }
