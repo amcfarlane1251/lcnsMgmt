@@ -3,6 +3,7 @@ class Requests extends Elegant
 {
 
 	protected $table = 'requests';
+	public $errors;
 
 	public static function withParams(array $params)
 	{
@@ -208,7 +209,7 @@ class Requests extends Elegant
 					}
 					
 					//checkout to account the request has been made for
-					License::checkOutToAccount($lcnsSeat->id, $this->account_id);					
+					License::checkOutToAccount($lcnsSeat->id, $this->account_id, $this->unit_id);					
 				}
 			}
 			elseif($this->type=='checkin')
