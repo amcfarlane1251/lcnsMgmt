@@ -89,14 +89,18 @@ class Requests extends Elegant
 		return true;
 	}
 
-	public static function retrieve($roleId = null, $reqCode, $type)
+	public static function retrieve($roleId = null, $unitId = null, $type)
 	{	
-		if($roleId){
-			return Requests::where('role_id', $roleId)->where('type', $type)->orderBy('created_at','desc')->get();
+		$query = Requests::where('type', $type);
+		
+		if($roleId) {
+			$query->where('role_id', $roleId);
 		}
-		else{
-			return Requests::where('type', $type)->orderBy('created_at','desc')->get();
+		if($unitId) {
+			$query->where('unit_id', $unitId);
 		}
+		
+		return $query->orderBy('created_at','desc')->get();
 	}
 
 	public function store($lcnsTypes, $userStatus, $account)

@@ -55,8 +55,13 @@ class RequestsController extends \BaseController {
 			if(!$reqCode){$reqCode = 1;} //ASAP
 			if($roleId==1){$roleId='';}
 		}
+		
+		//set unitId if a requester
+		$user->inGroup(Sentry::findGroupByName('Requestors')) ? $unitId = $user->unit_id : $unitId = null;
+		
 		//get the requests
-		$requests = Request::retrieve($roleId, $reqCode, $type);
+		$requests = Request::retrieve($roleId, $unitId, $type);
+		
 		//ajax request so return json
 		if($this->httpRequest->ajax()){
 			//make table headers
