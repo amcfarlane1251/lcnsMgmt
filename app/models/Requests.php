@@ -204,6 +204,7 @@ class Requests extends Elegant
 							$asset->assigned_to = $this->account->id;
 						}
 						$asset->role_id = $this->role_id;
+						$asset->unit_id = $this->unit_id;
 						$asset->save();
 						License::checkOutToAsset($lcnsSeat->id, $asset->id);
 					}

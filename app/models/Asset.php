@@ -374,13 +374,14 @@ class Asset extends Depreciable
 		return $query->whereNotNull('deleted_at');
 	}
 
-    public function populateDashboard($roleId)
+    public function populateDashboard($roleId, $unitId)
     {
         //get asset info
         $allAssets = DB::table('models')
                     ->join('assets', 'assets.model_id', '=','models.id')
-                    ->orwhere(function ($query) use ($roleId) {
-                        $query->where('assets.role_id', $roleId);
+                    ->orwhere(function ($query) use ($roleId, $unitId) {
+                        $query->where('assets.role_id', $roleId)
+							  ->where('assets.unit_id', $unitId);
                         $query->where('assets.deleted_at', NULL);
                     })->get();
         $assets = array();        

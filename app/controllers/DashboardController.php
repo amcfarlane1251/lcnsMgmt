@@ -57,7 +57,7 @@ class DashboardController extends \BaseController
 
         //get asset info
         $assetObj = new Asset();
-        $assets = $assetObj->populateDashboard($roleId);
+        $assets = $assetObj->populateDashboard($roleId, $unitId);
 		
 		//get all the units for the EC
 		$role = Role::find($roleId);
