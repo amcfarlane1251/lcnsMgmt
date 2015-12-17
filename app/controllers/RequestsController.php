@@ -132,7 +132,7 @@ class RequestsController extends \BaseController {
 
 		if($type=='license') {
 			//define array of license types
-	        $lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->lists('name', 'id');
+	        $lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->select(array('name', 'id', 'asset_flag'))->get();
 
 			return View::make('backend/requests/license/edit')
 				->with('request',new Request)
@@ -257,7 +257,7 @@ class RequestsController extends \BaseController {
 		$type = $request->type;
 
 		//define array of license types
-		$lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->lists('name', 'id');
+		$lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->select(array('name', 'id', 'asset_flag'))->get();
 
 		(Sentry::getUser()->hasAccess('admin') ? $approver = true : $approver = false);
 

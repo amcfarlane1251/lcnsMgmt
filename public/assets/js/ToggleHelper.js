@@ -1,9 +1,7 @@
-function ToggleHelper(c, t, e, s)
+function ToggleHelper(c, e)
 {
 	var container = c;
-	var toggle = t;
 	var element = e;
-	var shared = s;
 	var self = this;
 
 	this.init = function()
@@ -15,7 +13,7 @@ function ToggleHelper(c, t, e, s)
 	this.trigger = function()
 	{	
 		$(this).find('option:selected').each(function(){
-			if( $(this).text().trim()==toggle ) {
+			if( $(this).data('asset-flag')==true ) {
 				self.show();
 				return false;
 			}
@@ -35,18 +33,7 @@ function ToggleHelper(c, t, e, s)
 	//hide the new element
 	this.hide = function()
 	{
-		var flag = false;
-		$("#"+container).find('option:selected').each(function(){
-			for(var key in shared){
-				if($(this).text().trim()==key){
-					if(element==shared[key]){
-						flag = true;
-					}
-				}
-			}
-		});
-
 		var elemToHide = $('*[data-toggle='+element+']');
-		if(!flag){elemToHide.addClass('hidden');}
+		elemToHide.addClass('hidden');
 	}
 }

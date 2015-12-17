@@ -52,17 +52,17 @@
 				</div>
 				<div class="col-md-4" id="lcnsContainer">
 					<select name="lcnsTypes[]" id="lcnsTypes[]" multiple="multiple" class="form-control">
-						@foreach($lcnsTypes as $id => $lcnsType)
+						@foreach($lcnsTypes as $lcnsType)
 							@if(array_key_exists('lcnsTypes',Input::old()))
-							<option value="{{$id}}"
-							{{ (in_array($id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}
-							{{ (in_array($id, Input::old('lcnsTypes')) ? 'selected="selected"' : '') }}>
-							{{{ $lcnsType }}}
-							</option>
+								<option value="{{$lcnsType->id}}" data-asset-flag="{{$lcnsType->asset_flag}}"
+								{{ (in_array($lcnsType->id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}
+								{{ (in_array($lcnsType->id, Input::old('lcnsTypes')) ? 'selected="selected"' : '') }}>
+								{{{ $lcnsType->name }}}
+								</option>
 							@else
-								<option value="{{$id}}"
-								{{ (in_array($id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}>
-								{{{ $lcnsType }}}
+								<option value="{{$lcnsType->id}}" data-asset-flag="{{$lcnsType->asset_flag}}"
+								{{ (in_array($lcnsType->id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}>
+								{{{ $lcnsType->name }}}
 								</option>
 							@endif
 						@endforeach
@@ -82,7 +82,7 @@
 			</div>
 
 			{{-- Account --}}
-			<div class="{{array_key_exists('lcnsTypes',Input::old()) || isset($assignedLcns) ? '' : 'hidden' }}" data-toggle='accountInfo'>
+			<div class="" data-toggle='accountInfo'>
 				<h3>@Lang('account.formSection')</h3>
 				<div class="btn-group" role="group" id="user-select">
 					<h5>@Lang('account.selectOption')</h5>
@@ -137,13 +137,8 @@
 
 	<script>
 		$(function(){
-			var shared = {"SABA Publisher":"accountInfo", "Pedagogue":"accountInfo"};
-			toggleHelper1 = new ToggleHelper('lcnsContainer','SABA Publisher','pcName',shared);
+			toggleHelper1 = new ToggleHelper('lcnsContainer','pcName');
 			toggleHelper1.init();
-			toggleHelper2 = new ToggleHelper('lcnsContainer','Pedagogue','accountInfo',shared);
-			toggleHelper2.init();
-			toggleHelper3 = new ToggleHelper('lcnsContainer','SABA Publisher','accountInfo',shared);
-			toggleHelper3.init();
 
 			var pcNameDOM = $('#pcName');
 			var usernameDOM = $('#username');
