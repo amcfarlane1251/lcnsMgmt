@@ -1,10 +1,9 @@
 $(function(){
-	//confirm license checkin
 	$('.checkin-license').confirm({
 		text: "Are you sure you want to check in this license?",
 		title: "Confirmation Required",
 		confirm: function(b){
-			checkin(b);
+			request(b, 'checkin');
 		},
 		cancel: function(b){
 
@@ -12,15 +11,14 @@ $(function(){
 		confirmButton:"Yes I am",
 		cancelButton:"No",
 		confirmButtonClass: "btn-danger",
-    	cancelButtonClass: "btn-default",
+		cancelButtonClass: "btn-default",
 	});
-
-	//confirm license checkin
-	$('.cancel-request').confirm({
-		text: "Are you sure you want to check in this license?",
+	
+	$('.cancel-license').confirm({
+		text: "Are you sure you want to move this license?",
 		title: "Confirmation Required",
 		confirm: function(b){
-			checkin(b);
+			request(b, 'move');
 		},
 		cancel: function(b){
 
@@ -28,29 +26,30 @@ $(function(){
 		confirmButton:"Yes I am",
 		cancelButton:"No",
 		confirmButtonClass: "btn-danger",
-    	cancelButtonClass: "btn-default",
+		cancelButtonClass: "btn-default",
 	});
         
 	//checkin a license via ajax and update the display listing
-	function checkin(b)
+	function request(b, action)
 	{
-		$.ajax({
-			url:b.attr('href'),
-			type:'PUT',
-			data:{
-				action:'checkin',
-			},
-			success:function(data){
-				data = JSON.parse(data);
-				if(data.success) {
-                                        console.log(data);
-					updateRow(b);
+		if(action=='checkin') {
+			$.ajax({
+				url:b.attr('href'),
+				type:'PUT',
+				data:{
+					action:'checkin',
+				},
+				success:function(data){
+					data = JSON.parse(data);
+					if(data.success) {
+						updateRow(b);
+					}
+				},
+				error:function(data){
+					console.log('error');
 				}
-			},
-			error:function(data){
-				console.log('error');
-			}
-		});
+			});
+		}
 	}
 
 	//update the ui

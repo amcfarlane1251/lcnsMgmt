@@ -15,6 +15,7 @@ return array(
     'seat'  					=> 'Seat',
     'seats'  					=> 'Seats',
     'software_licenses'  		=> 'Software Licenses',
+	'type'						=> 'License Type',
     'types'                     => 'License Types',
     'user'  					=> 'User',
     'view'  					=> 'View License',

@@ -19,7 +19,7 @@ class LicenseSeat extends Elegant
 
     public function account()
     {
-        return $this->belongsTo('Account', 'assigned_to')->select(array('id','first_name','last_name'));
+        return $this->belongsTo('Account', 'assigned_to')->select(array('id','first_name','last_name', 'username'));
     }
 
     public function asset()
@@ -32,6 +32,11 @@ class LicenseSeat extends Elegant
     {
         return $this->belongsTo('Requests','id', 'license_id');
     }
+	
+	public function unit()
+	{
+		return $this->belongsTo('Unit');
+	}
 
     public static function checkInRequest($seat)
     {
@@ -61,6 +66,20 @@ class LicenseSeat extends Elegant
         $this->save();
     }
 	
+	public function assign($request, $assetId)
+	{
+		$this->asset_id = $assetId;
+		$this->assigned_to = $request->account_id;
+		$this->unit_id = $request->unit_id;
+		try{
+			$this->save();
+		}
+		catch(Exception $e) {
+			echo 'Caught exception: ',  $e->getMessage(), "\n";
+		}
+	}
+
+
 	public function getLicenseType()
 	{
 		$typeId = $this->license->type_id;

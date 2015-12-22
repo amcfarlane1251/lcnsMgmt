@@ -25,4 +25,22 @@ form .alert-success {
     margin-top: 1rem;
     margin-bottom: 0; }
 
+/*
+ ** Approve Move Request Page
+ **
+ */
+.transition-block {
+  display: table;
+  width: 100%;
+  margin-bottom: 2.25rem; }
+  .transition-block div {
+    float: none;
+    display: table-cell;
+    vertical-align: middle; }
+    .transition-block div label {
+      display: block;
+      margin-bottom: 0; }
+    .transition-block div p {
+      margin: 0; }
+
 /*# sourceMappingURL=styles.css.map */

@@ -301,6 +301,7 @@ class License extends Depreciable
             $seat = LicenseSeat::find($lcns->id);
 
             if($user = $seat->account) {
+				$lcnsObj[$key]->assignedUserId = $user->id;
                 $lcnsObj[$key]->assignedUser = $user->first_name." ".$user->last_name;
             }
             if($asset = $seat->asset) {

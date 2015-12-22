@@ -9,6 +9,7 @@ use Illuminate\Http\Request as HttpRequest;
 use Input;
 use Lang;
 use License;
+use LicenseSeat;
 use LicenseType;
 use Location;
 use Redirect;
@@ -129,10 +130,10 @@ class RequestsController extends \BaseController {
 		$ec = Sentry::getUser()->filterRoles();
 		$units = Sentry::getUser()->filterUnits();
 		$locations = Location::lists('name', 'id');
+		//define array of license types
+	    $lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->select(array('name', 'id', 'asset_flag'))->get();
 
 		if($type=='license') {
-			//define array of license types
-	        $lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->select(array('name', 'id', 'asset_flag'))->get();
 
 			return View::make('backend/requests/license/edit')
 				->with('request',new Request)
@@ -141,6 +142,21 @@ class RequestsController extends \BaseController {
 				->with('lcnsTypes', $lcnsTypes)
 				->with('type',$type)
 				->with('action', 'POST');
+		}
+		else if($type=='move') {
+			$license = LicenseSeat::find(Input::get('lcnsId'));
+			$request = new Request();
+			$account = Account::find(Input::get('accntId'));
+			if($account) {
+				$userStatus = 'existing';
+				$request->account()->associate($account);
+			}
+			return View::make('backend/requests/license/move')
+					->with('request', $request)
+					->with('license', $license)
+					->with('userStatus', $userStatus)
+					->with('type',$type)
+					->with('action', 'POST');
 		}
 		elseif($type=='account') {
 			//define array of employee types
@@ -164,12 +180,12 @@ class RequestsController extends \BaseController {
 	 */
 	public function store()
 	{
-		//get request variables
+		//get and format request variables
 		$reqParams = $this->formatReqParams(Input::all());
-		$type = Input::get('type');
+		$accountParams = $this->formatAccntParams(Input::all());
 		$userStatus = Input::get('userStatus');
-		$accountParams = $this->formatAccntParams(Input::all(), $type);
-
+		$type = Input::get('type');
+		
 		if($type=='account') {
 			$account = Account::withParams($accountParams);
 			if(!$account->validation()) {
@@ -185,19 +201,23 @@ class RequestsController extends \BaseController {
 			$account->save();
 			return Redirect::to('request/'.$request->id)->with('success', Lang::get('admin/request/message.success.create'));
 		}
-		elseif($type=='license') {
+		elseif($type=='license' || $type='move') {
 			$pcName = Input::get('pcName');
 			$lcnsTypes = Input::get('lcnsTypes');
 	        $request = Request::withParams($reqParams);
 			$account = Account::withParams($accountParams);
-			//validate request
+			$assetFlag = false;
+			
+			//check if request requires a pc name
 			foreach($lcnsTypes as $typeId) {
 				if(LicenseType::find($typeId)->asset_flag){
 					if(!$request->validation()) {
+						//return with errors if validation failed
 						return Redirect::back()->withErrors($request->errors)->with('status',$userStatus)->withInput();
 					}
 				}
 			}
+			
 			//validate the account
 			if($userStatus!='existing') {
 				if(!$account->validation()) {
@@ -298,7 +318,7 @@ class RequestsController extends \BaseController {
 			$userStatus = Input::get('userStatus');
 			$pcName = Input::get('pcName');
 			$accountParams = $this->formatAccntParams(Input::all(), 'license');
-			$return = $request->store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams);
+			$return = $request->store($lcnsTypes, $userStatus, $accountParams);
 		}
 		if($return['success']){
 				return Redirect::to('request?type='.$return['type'])->with('success', $return['message']);
@@ -362,6 +382,9 @@ class RequestsController extends \BaseController {
 		elseif($request->type=='license' || $request->type=='checkin') {
 			return View::make('backend/requests/license/approve')->with('request',$request);
 		}
+		elseif($request->type=='move') {
+			return View::make('backend/requests/license/approveMove')->with('request', $request)->with('license', LicenseSeat::find($request->license_id));
+		}
 	}
 
 	/**
@@ -377,18 +400,30 @@ class RequestsController extends \BaseController {
 
 	private function formatReqParams($input)
 	{	
-		return array(
-			'user_id'=>Sentry::getUser()->id,
-        	'unit_id'=>$input['unit'],
-        	'role_id'=>$input['ec'],
-        	'type'=>$input['type'],
-			'pc_name'=> (isset($input['pcName']) ? $input['pcName'] : ''),
-		);
+		if($input['type']=='license') {
+			return array(
+				'user_id'=>Sentry::getUser()->id,
+				'unit_id'=>$input['unit'],
+				'role_id'=>$input['ec'],
+				'type'=>$input['type'],
+				'pc_name'=> (isset($input['pcName']) ? $input['pcName'] : ''),
+			);
+		}
+		elseif($input['type']=='move') {
+			return array(
+				'user_id'=>Sentry::getUser()->id,
+				'unit_id'=>$input['unit'],
+				'role_id'=>$input['ec'],
+				'type'=>$input['type'],
+				'pc_name'=> (isset($input['pcName']) ? $input['pcName'] : ''),
+				'license_id' => $input['lcnsId']
+			);
+		}
 	}
 
-	private function formatAccntParams($input, $type)
+	private function formatAccntParams($input)
 	{
-		if($type=='account'){
+		if($input['type']=='account'){
 			return array(
 				'first_name'=>$input['firstName'],
 				'last_name'=>$input['lastName'],
@@ -403,7 +438,7 @@ class RequestsController extends \BaseController {
 				'location_id'=>$input['location'],
 			);
 		}
-		elseif($type=='license') {
+		elseif($input['type']=='license' || 'move') {
 			return array(
 				'first_name'=>$input['firstName'],
 				'last_name'=>$input['lastName'],
