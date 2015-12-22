@@ -32,7 +32,7 @@
 				@elseif($obj->assignedUser || $obj->assignedAsset)
 					<td>
 						<a href="{{URL::to('licenses/'.$obj->id)}}" class='checkin-license btn btn-primary btn-xs'>Check In</a>
-						<a href="{{URL::to('licenses/'.$obj->id)}}" class='move-license btn btn-primary btn-xs'>Move</a>
+						<a href="{{URL::to('request/create?type=move&lcnsId='.$obj->id).'&accntId='.$obj->assignedUserId}}" class='move-license btn btn-primary btn-xs'>Move</a>
 					</td>
 				@else
 					<td></td>

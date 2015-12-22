@@ -217,11 +217,15 @@ class Requests extends Elegant
 					License::checkOutToAccount($lcnsSeat->id, $this->account_id, $this->unit_id);					
 				}
 			}
-			elseif($this->type=='checkin')
-			{
-				//clear license fields
+			elseif($this->type=='checkin') {
 				$seat = LicenseSeat::find($this->license_id);
 				$seat->checkIn();
+			}
+			elseif($this->type=='move') {
+				$seat = LicenseSeat::find($this->license_id);
+				$assetId = $this->asset($seat);
+
+				$seat->assign($this, $assetId);
 			}
 
 			//detach requested licenses
@@ -234,6 +238,32 @@ class Requests extends Elegant
 		}
 	}
 
+	private function asset($seat)
+	{
+		$type = $seat->getLicenseType();
+
+		if($type->asset_flag) {
+			//create computer name as an asset if it doesnt exist
+			if($obj = DB::table('assets')->where('serial', $this->pc_name)->first(array('id'))){
+				$asset = Asset::find($obj->id);
+			}
+			else{
+				$asset = new Asset();
+				$asset->name = "DWAN PC";
+				$asset->serial = $this->pc_name;
+				$asset->asset_tag = $this->pc_name;
+				$asset->model_id = 7; //TODO: Remove this hard coding for model id
+				$asset->status_id = 1;
+				$asset->assigned_to = $this->account->id;
+			}
+			$asset->role_id = $this->role_id;
+			$asset->unit_id = $this->unit_id;
+			$asset->save();
+			
+			return $asset->id;
+		}
+	}
+	
 	public function deletePrep($id = null)
 	{
 		if($id){

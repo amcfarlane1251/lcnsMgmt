@@ -11,6 +11,7 @@ return array(
 	'requestLicense' => 'Request a License',
 	'requestAccount' => 'Request an Account',
 	'approveLicense' => 'Approve License',
+	'moveLicense'	 => 'Move License',
 	'open' => 'Open Requests',
 	'closed' => 'Closed Requests',
 	'licenses' => 'License Requests',
@@ -35,6 +36,8 @@ return array(
 	
 	'requester' => 'Requester',
 	'pcName' => 'Computer Name',
+	'pcName.original' => 'Current Computer Name',
+	'pcName.requested' => 'Requested Computer Name',
 	'ec' => 'Environmental Command',
 	'type' => 'License Type',
 	'approve' => 'Approve?',
@@ -48,4 +51,5 @@ return array(
 
 	'message.error.no_lcns_publ' => '',
 	'approved' => 'Request Approved',
+	
 );

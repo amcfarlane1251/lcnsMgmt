@@ -38,3 +38,26 @@ form{
         margin-bottom:0;
     }
 }
+
+/*
+ ** Approve Move Request Page
+ **
+ */
+.transition-block{
+    display:table;
+    width:100%;
+    margin-bottom:2.25rem;
+    div {
+        float:none;
+        display:table-cell;
+        vertical-align:middle;
+        label{
+            display:block;
+            margin-bottom:0;
+        }
+        p{
+            margin:0;
+        }
+    }
+        
+}
