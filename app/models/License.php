@@ -181,7 +181,8 @@ class License extends Depreciable
             ->update(array('asset_id' => $assetId, 'updated_at'=>DB::raw('NOW()')));
     }
 
-    public static function checkOutToAccount($seatId, $accountId, $unitId){
+    public static function checkOutToAccount($seatId, $accountId, $unitId)
+	{
         DB::table('license_seats')
             ->where('id', '=', $seatId)
             ->update(array('assigned_to' => $accountId, 'unit_id' => $unitId));

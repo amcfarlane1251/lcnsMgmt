@@ -310,6 +310,7 @@ class RequestsController extends \BaseController {
 		}
 
 		if(Input::get('action')=='approve') {
+			$userStatus = Input::get('userStatus');
 			$return = $request->approve();
 		}
 		else{
@@ -324,7 +325,7 @@ class RequestsController extends \BaseController {
 				return Redirect::to('request?type='.$return['type'])->with('success', $return['message']);
 			}
 			else{
-				return Redirect::back()->withErrors($return['message'])->with('status',$userStatus)->withInput();
+				return Redirect::back()->with('error', $return['message'])->with('status',$userStatus)->withInput();
 		}
 	}
 

@@ -66,7 +66,7 @@ class LicenseSeat extends Elegant
         $this->save();
     }
 	
-	public function assign($request, $assetId)
+	public function checkOut($request, $assetId)
 	{
 		$this->asset_id = $assetId;
 		$this->assigned_to = $request->account_id;

@@ -191,30 +191,11 @@ class Requests extends Elegant
 				}
 
 				foreach($toAdd as $key=>$lcnsSeat){
-					$modelObj = LicenseSeat::find($lcnsSeat->id);
-					$type = $modelObj->getLicenseType();
-					if($type->asset_flag) {
-						//create computer name as an asset if it doesnt exist
-						if($obj = DB::table('assets')->where('serial', $this->pc_name)->first(array('id'))){
-							$asset = Asset::find($obj->id);
-						}
-						else{
-							$asset = new Asset();
-							$asset->name = "DWAN PC";
-							$asset->serial = $this->pc_name;
-							$asset->asset_tag = $this->pc_name;
-							$asset->model_id = 7; //TODO: Remove this hard coding for model id
-							$asset->status_id = 1;
-							$asset->assigned_to = $this->account->id;
-						}
-						$asset->role_id = $this->role_id;
-						$asset->unit_id = $this->unit_id;
-						$asset->save();
-						License::checkOutToAsset($lcnsSeat->id, $asset->id);
-					}
-					
-					//checkout to account the request has been made for
-					License::checkOutToAccount($lcnsSeat->id, $this->account_id, $this->unit_id);					
+					$seat = LicenseSeat::find($lcnsSeat->id);
+					//create/retreive asset and check it out to the account the request is for
+					$assetId = $this->asset($seat);
+					//checkout license seat to the asset account the request has been made for
+					$seat->checkOut($this, $assetId);
 				}
 			}
 			elseif($this->type=='checkin') {
@@ -225,7 +206,7 @@ class Requests extends Elegant
 				$seat = LicenseSeat::find($this->license_id);
 				$assetId = $this->asset($seat);
 
-				$seat->assign($this, $assetId);
+				$seat->checkOut($this, $assetId);
 			}
 
 			//detach requested licenses
@@ -246,6 +227,7 @@ class Requests extends Elegant
 			//create computer name as an asset if it doesnt exist
 			if($obj = DB::table('assets')->where('serial', $this->pc_name)->first(array('id'))){
 				$asset = Asset::find($obj->id);
+				//TODO: most likely put a check in here to see if asset is already assigned to a user and return error
 			}
 			else{
 				$asset = new Asset();
@@ -254,13 +236,16 @@ class Requests extends Elegant
 				$asset->asset_tag = $this->pc_name;
 				$asset->model_id = 7; //TODO: Remove this hard coding for model id
 				$asset->status_id = 1;
-				$asset->assigned_to = $this->account->id;
 			}
+			$asset->assigned_to = $this->account->id;
 			$asset->role_id = $this->role_id;
 			$asset->unit_id = $this->unit_id;
 			$asset->save();
 			
 			return $asset->id;
+		}
+		else{
+			return null;
 		}
 	}
 	
