@@ -295,6 +295,7 @@ class License extends Depreciable
             $lcnsObj[$key]->id = $lcns->id;
             $lcnsObj[$key]->name = $lcns->name;
             $lcnsObj[$key]->assignedUser = '';
+			$lcnsObj[$key]->assignedUserId = '';
             $lcnsObj[$key]->assignedAsset = '';
             $lcnsObj[$key]->request = '';
             $lcnsObj[$key]->updatedAt = $lcns->updated_at;

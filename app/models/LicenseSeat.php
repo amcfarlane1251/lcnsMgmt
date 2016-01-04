@@ -48,6 +48,7 @@ class LicenseSeat extends Elegant
             'account_id' => $seat->assigned_to,
             'role_id' => $seat->license->role_id,
             'unit_id' => $user->unit_id,
+			'pc_name' => ($seat->asset ? $seat->asset->asset_tag : ''),
             'type' => 'checkin',
         );
 		$request = Requests::withParams($params);

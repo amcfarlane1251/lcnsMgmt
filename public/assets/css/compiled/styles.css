@@ -7,7 +7,7 @@
   background: #e74c3c; }
 
 td.actions a ~ a {
-  margin: 0 .667rem; }
+  margin: 0 0 0 .667rem; }
 
 form .btn-group {
   margin-bottom: 1rem; }

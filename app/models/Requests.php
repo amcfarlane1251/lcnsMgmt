@@ -201,6 +201,10 @@ class Requests extends Elegant
 			elseif($this->type=='checkin') {
 				$seat = LicenseSeat::find($this->license_id);
 				$seat->checkIn();
+				if($this->pc_name) {
+					$asset = Asset::findByName($this->pc_name);
+					$asset->checkIn();
+				}
 			}
 			elseif($this->type=='move') {
 				$seat = LicenseSeat::find($this->license_id);

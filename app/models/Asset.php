@@ -21,6 +21,12 @@ class Asset extends Depreciable
         'status' 			=> 'integer'
         );
 
+	public static function findByName($name)
+	{
+		$asset = Asset::where('asset_tag', $name)->first();
+		return Asset::find($asset->id);
+	}
+	
     public function depreciation()
     {
         return $this->model->belongsTo('Depreciation','depreciation_id');
@@ -408,4 +414,11 @@ class Asset extends Depreciable
 
         return $assets;
     }
+	
+	public function checkIn()
+	{
+		$this->assigned_to = NULL;
+		$this->unit_id = NULL;
+		$this->save();
+	}
 }
