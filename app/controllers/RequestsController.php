@@ -248,12 +248,19 @@ class RequestsController extends \BaseController {
 			return Redirect::to('request')->with('error', 'Request not found.');
 		}
 
+		//return the view based on request type
 		if($request->type=='account') {
 			$account = $request->account()->first();
 			return View::make('backend/requests/accounts/view')->with('request', $request)->with('account',$account);
 		}
-		else{
+		else if($request->type=='license') {
 			return View::make('backend/requests/view')->with('request', $request);
+		}
+		else if($request->type=='checkin') {
+			return View::make('backend/requests/license/checkin/view')->with('request', $request)->with('license', LicenseSeat::find($request->license_id)->license);
+		}
+		else if($request->type=='move') {
+			return View::make('backend/requests/license/move/view')->with('request', $request)->with('license', LicenseSeat::find($request->license_id));
 		}
 	}
 
@@ -380,11 +387,14 @@ class RequestsController extends \BaseController {
 			$account = $request->account()->first();
 			return View::make('backend/requests/accounts/approve')->with('request',$request)->with('account',$account);
 		}
-		elseif($request->type=='license' || $request->type=='checkin') {
+		elseif($request->type=='license') {
 			return View::make('backend/requests/license/approve')->with('request',$request);
 		}
+		else if($request->type=='checkin') {
+			return View::make('backend/requests/license/checkin/approve')->with('request',$request)->with('license', LicenseSeat::find($request->license_id)->license);
+		}
 		elseif($request->type=='move') {
-			return View::make('backend/requests/license/approveMove')->with('request', $request)->with('license', LicenseSeat::find($request->license_id));
+			return View::make('backend/requests/license/move/approve')->with('request', $request)->with('license', LicenseSeat::find($request->license_id));
 		}
 	}
 

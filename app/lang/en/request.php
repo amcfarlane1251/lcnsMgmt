@@ -32,12 +32,14 @@ return array(
 	'message.success.delete' => 'The request has been removed',
 
 	'userInfo'		=> 'User Information',
+	'userInfo.empty'		=> 'Units License Pool',
 	'unitInfo'		=> 'Unit Information',
 	
 	'requester' => 'Requester',
 	'pcName' => 'Computer Name',
 	'pcName.original' => 'Current Computer Name',
 	'pcName.requested' => 'Requested Computer Name',
+	'pcName.empty' => 'Empty',
 	'ec' => 'Environmental Command',
 	'type' => 'License Type',
 	'approve' => 'Approve?',
