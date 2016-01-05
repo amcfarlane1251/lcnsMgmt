@@ -24,7 +24,9 @@ class Asset extends Depreciable
 	public static function findByName($name)
 	{
 		$asset = Asset::where('asset_tag', $name)->first();
-		return Asset::find($asset->id);
+		if($asset) {
+			return Asset::find($asset->id);
+		}
 	}
 	
     public function depreciation()
@@ -49,6 +51,11 @@ class Asset extends Depreciable
             ->orderBy('created_at', 'desc');
     }
 
+	public function assignedTo()
+	{
+		return $this->belongsTo('Account', 'assigned_to');
+	}
+	
     public function assigneduser()
     {
         return $this->belongsTo('User', 'assigned_to')->withTrashed();

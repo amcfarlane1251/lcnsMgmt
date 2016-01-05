@@ -126,15 +126,16 @@ class RequestsController extends \BaseController {
 		//get the request type
 		$type = Input::get('type');
 		if(!$type){$type='license';}
-		//get all the environmental commands
+		
+		//get all the environmental commands, units, and locations
 		$ec = Sentry::getUser()->filterRoles();
 		$units = Sentry::getUser()->filterUnits();
 		$locations = Location::lists('name', 'id');
+		
 		//define array of license types
 	    $lcnsTypes = DB::table('license_types')->where('name','!=', 'DLN LMS')->select(array('name', 'id', 'asset_flag'))->get();
 
 		if($type=='license') {
-
 			return View::make('backend/requests/license/edit')
 				->with('request',new Request)
 				->with('ec', $ec)
@@ -223,6 +224,10 @@ class RequestsController extends \BaseController {
 				if(!$account->validation()) {
 					return Redirect::back()->withErrors($account->errors)->with('status',$userStatus)->withInput();
 				}
+			}
+			//validate the asset (if any)
+			if(!$request->validateAsset($account)) {
+				return Redirect::back()->withErrors($request->errors)->with('status',$userStatus)->withInput();
 			}
 			
 	        $return = $request->store($lcnsTypes, $userStatus, $account);

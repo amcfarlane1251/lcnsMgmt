@@ -56,7 +56,11 @@ class Requests extends Elegant
 	public static function count($type, $roleId)
 	{
 		( $roleId!=1 ? $reqCode='' : $reqCode=1 );
-		return DB::table('requests')->where('request_code', '=', $reqCode)->where('type', $type)->count();
+		$query = DB::table('requests')->where('request_code', '=', $reqCode)->where('type', $type);
+		if($roleId!=1) {
+			$query->where('role_id', $roleId);
+		}
+		return $query->count();
 	}
 
 	public static function openReqCount()
@@ -88,6 +92,35 @@ class Requests extends Elegant
 		}
 		return true;
 	}
+	
+	/*
+	 * Validate an existing asset
+	 */
+	public function validateAsset($account)
+	{
+		//check if asset belongs to the account it has been requested for
+		if($this->pc_name) {
+			$asset = Asset::findByName($this->pc_name);
+			
+			//if existing asset perform validation. If it's new, return true
+			if($asset){
+				if($asset->assignedTo->first_name.$asset->assignedTo->last_name != $account->first_name.$account->last_name) {
+					// New MessageBag
+					$errorMessages = new Illuminate\Support\MessageBag;
+					$errorMessages->add('pcName', 'Computer Name already belongs to a different user');
+					$this->errors = $errorMessages;
+					return false;
+				}
+				return true;
+			}
+			else{
+				return true;
+			}
+		}
+		else{
+			return true;
+		}
+	}
 
 	public static function retrieve($roleId = null, $unitId = null, $type)
 	{	
@@ -102,6 +135,7 @@ class Requests extends Elegant
 		
 		return $query->orderBy('created_at','desc')->get();
 	}
+	
 
 	public function store($lcnsTypes, $userStatus, $account)
 	{	
