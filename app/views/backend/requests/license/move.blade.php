@@ -63,7 +63,7 @@
 					{{ Form::label('pcName', Lang::get('request.pcName'), array('class'=>'control-label')) }}
 				</div>
 				<div class="col-md-4">
-					{{ Form::text('pcName', (isset($license->asset) ? $license->asset->asset_tag : ''), array('class'=>'form-control')) }}
+					{{ Form::text('pcName', ($license->asset ? $license->asset->asset_tag : ''), array('class'=>'form-control')) }}
 					{{ $errors->first('pcName', '<br><span class="alert-msg">:message</span>') }}
 				</div>
 			</div>
