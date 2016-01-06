@@ -100,10 +100,15 @@ class Requests extends Elegant
 	{
 		//check if asset belongs to the account it has been requested for
 		if($this->pc_name) {
-			$asset = Asset::findByName($this->pc_name);
+			//if a move request, allow moving to the same resource for a different account
+			if($this->type=='move' && ( LicenseSeat::find($this->license_id)->asset->asset_tag == $this->pc_name)){
+				return true;
+			}
 			
 			//if existing asset perform validation. If it's new, return true
-			if($asset){
+			$asset = Asset::findByName($this->pc_name);
+			
+			if($asset && $asset->assignedTo){
 				if($asset->assignedTo->first_name.$asset->assignedTo->last_name != $account->first_name.$account->last_name) {
 					// New MessageBag
 					$errorMessages = new Illuminate\Support\MessageBag;

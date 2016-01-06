@@ -45,7 +45,7 @@
         <div class="col-md-3 col-sm-3 stat">
             <div class="data">
                 <a href="{{ URL::to('request?type=checkin') }}">
-                    <span class="number">{{ number_format(License::assetcount()) }}</span>
+                    <span class="number">{{ number_format(Requests::count('move',$user->role->id)) }}</span>
                     <span style="color:black">@lang('request.move')</span>
                 </a>
             </div>
