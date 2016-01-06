@@ -247,9 +247,15 @@ class Requests extends Elegant
 			}
 			elseif($this->type=='move') {
 				$seat = LicenseSeat::find($this->license_id);
+				$oldAsset = Asset::find($seat->asset_id);
 				$assetId = $this->asset($seat);
 
 				$seat->checkOut($this, $assetId);
+				
+				//clear old asset's assigned user if no licenses are attached to it
+				if($oldAsset->licenseCount() <= 0) {
+					$oldAsset->checkIn();
+				}
 			}
 
 			//detach requested licenses
@@ -275,8 +281,8 @@ class Requests extends Elegant
 			else{
 				$asset = new Asset();
 				$asset->name = "DWAN PC";
-				$asset->serial = $this->pc_name;
-				$asset->asset_tag = $this->pc_name;
+				$asset->serial = strtoupper($this->pc_name);
+				$asset->asset_tag = strtoupper($this->pc_name);
 				$asset->model_id = 7; //TODO: Remove this hard coding for model id
 				$asset->status_id = 1;
 			}

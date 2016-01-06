@@ -254,11 +254,18 @@ class Asset extends Depreciable
     /**
      * Get role information
     */
-    public function roles() {
+    public function roles()
+	{
         return $this->belongsTo('Role', 'role_id');
     }
 
-
+	/**
+	 * Count how many licenses belong to this asset
+	 */
+	public function licenseCount()
+	{
+		return $this->hasMany('LicenseSeat', 'asset_id', 'id')->count();
+	}
 
 	/**
 	-----------------------------------------------
