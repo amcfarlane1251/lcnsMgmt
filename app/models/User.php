@@ -177,7 +177,7 @@ class User extends SentryUserModel
             $ec = Role::lists('role', 'id');
         }
         else{
-            $ec = Role::where('role', '<>', 'All')->lists('role', 'id');
+            $ec = Role::where('id',$this->role_id)->lists('role', 'id');
         }
 
         return $ec;

@@ -242,7 +242,9 @@ class Requests extends Elegant
 				$seat->checkIn();
 				if($this->pc_name) {
 					$asset = Asset::findByName($this->pc_name);
-					$asset->checkIn();
+					if($asset->licenseCount() <= 0) {
+						$asset->checkIn();	
+					}
 				}
 			}
 			elseif($this->type=='move') {

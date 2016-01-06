@@ -117,7 +117,7 @@ class RequestsController extends \BaseController {
 	}
 
 	/**
-	 * Show the form for creating a new resource.
+	 * Show the form for creating a new request resource.
 	 *
 	 * @return Response
 	 */
