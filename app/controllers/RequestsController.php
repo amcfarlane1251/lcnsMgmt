@@ -82,7 +82,17 @@ class RequestsController extends \BaseController {
 					$return[$key]->lcnsTypes =  $request->licenseTypes;
 				}
 				elseif($type=='checkin') {
-					$return[$key]->lcnsName = $request->licenseSeat->license->name;
+					$return[$key]->lcnsTypes = [];
+					if($request->license_id) {
+						$return[$key]->lcnsTypes[]['name'] = $request->licenseSeat->license->name;
+					}
+					else if($request->asset_id) {
+						$licenseSeats = Asset::find($request->asset_id)->licenseSeats;
+						
+						foreach( $licenseSeats as $licenseSeat) {
+							$return[$key]->lcnsTypes[]['name'] = $licenseSeat->license->name;
+						}
+					}
 				}
 				
 				$return[$key]->created_at = (string)$request->created_at;
@@ -144,6 +154,10 @@ class RequestsController extends \BaseController {
 				->with('type',$type)
 				->with('action', 'POST');
 		}
+		else if($type=='checkin') {
+			return View::make('backend/requests/license/checkin/edit')
+				->with('asset', Asset::find(Input::get('asset_id')));
+		}
 		else if($type=='move') {
 			$license = LicenseSeat::find(Input::get('lcnsId'));
 			$request = new Request();
@@ -202,7 +216,7 @@ class RequestsController extends \BaseController {
 			$account->save();
 			return Redirect::to('request/'.$request->id)->with('success', Lang::get('admin/request/message.success.create'));
 		}
-		elseif($type=='license' || $type='move') {
+		elseif($type=='license' || $type=='move') {
 			$pcName = Input::get('pcName');
 			$lcnsTypes = Input::get('lcnsTypes');
 	        $request = Request::withParams($reqParams);
@@ -235,6 +249,15 @@ class RequestsController extends \BaseController {
 	        	return Redirect::to('request/'.$request->id)->with('success', $return['message']);
 	        }
 	    }
+		elseif($type=='checkin') {
+			$asset = Asset::find(Input::get('asset_id'));
+			$request = Request::withParams($reqParams);
+			
+			$return = $request->store();
+	        if($return['success']){
+	        	return Redirect::to('request/'.$request->id)->with('success', $return['message']);
+	        }
+		}
 	}
 
 	/**
@@ -262,7 +285,14 @@ class RequestsController extends \BaseController {
 			return View::make('backend/requests/view')->with('request', $request);
 		}
 		else if($request->type=='checkin') {
-			return View::make('backend/requests/license/checkin/view')->with('request', $request)->with('license', LicenseSeat::find($request->license_id)->license);
+			//license checkin
+			if($request->license_id){
+				return View::make('backend/requests/license/checkin/view')->with('request', $request)->with('license', LicenseSeat::find($request->license_id)->license);
+			}
+			//asset checkin
+			else if($request->asset_id){
+				return View::make('backend/requests/license/checkin/view')->with('request', $request)->with('asset', Asset::find($request->asset_id));
+			}
 		}
 		else if($request->type=='move') {
 			return View::make('backend/requests/license/move/view')->with('request', $request)->with('license', LicenseSeat::find($request->license_id));
@@ -416,12 +446,13 @@ class RequestsController extends \BaseController {
 
 	private function formatReqParams($input)
 	{	
-		if($input['type']=='license') {
+		if($input['type']=='license' || $input['type']=='checkin') {
 			return array(
 				'user_id'=>Sentry::getUser()->id,
 				'unit_id'=>$input['unit'],
 				'role_id'=>$input['ec'],
 				'type'=>$input['type'],
+				'asset_id'=> (isset($input['asset_id']) ? $input['asset_id'] : 0),
 				'pc_name'=> (isset($input['pcName']) ? $input['pcName'] : ''),
 			);
 		}
@@ -454,7 +485,7 @@ class RequestsController extends \BaseController {
 				'location_id'=>$input['location'],
 			);
 		}
-		elseif($input['type']=='license' || 'move') {
+		else if($input['type']=='license' || $input['type']=='move') {
 			return array(
 				'first_name'=>$input['firstName'],
 				'last_name'=>$input['lastName'],

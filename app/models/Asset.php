@@ -252,6 +252,14 @@ class Asset extends Depreciable
     }
 
     /**
+     * Get unit information
+    */
+    public function unit()
+	{
+        return $this->belongsTo('Unit', 'unit_id');
+    }
+	
+    /**
      * Get role information
     */
     public function roles()

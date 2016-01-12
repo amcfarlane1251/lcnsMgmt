@@ -40,6 +40,7 @@ return array(
 	'pcName.original' => 'Current Computer Name',
 	'pcName.requested' => 'Requested Computer Name',
 	'pcName.empty' => 'Empty',
+	'unit' => 'Unit',
 	'ec' => 'Environmental Command',
 	'type' => 'License Type',
 	'approve' => 'Approve?',
