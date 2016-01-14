@@ -248,8 +248,17 @@ class Requests extends Elegant
 			elseif($this->type=='checkin') {
 				//asset checkin
 				if($this->license_id == null) {
-					$asset = Asset::findByName($this->pc_name);
-					$licenseSeats =  $asset->licenseseats();
+					$asset = Asset::find($this->asset_id);
+					
+					//check-in the license seats
+					$licenseSeats =  $asset->licenseseats;
+					foreach($licenseSeats as $seat) {
+						$seat->checkIn();
+					}
+					
+					//check-in the asset
+					$asset->checkIn();
+					
 				}
 				//license checkin
 				else{

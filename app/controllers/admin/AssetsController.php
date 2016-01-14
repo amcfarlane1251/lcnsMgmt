@@ -59,7 +59,8 @@ class AssetsController extends AdminController
         }
         
         //get the assets
-        $assets = Asset::where('role_id', $roleId)->get();
+        //$assets = Asset::where('role_id', $roleId)->get();
+		$assets = Asset::listByRole($roleId, $user);
 
         foreach($assets as $key => $asset){
 			$assets[$key]->unit = $asset->unit ? $asset->unit->name : '';

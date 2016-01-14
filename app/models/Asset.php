@@ -29,6 +29,23 @@ class Asset extends Depreciable
 		}
 	}
 	
+	public static function listByRole($roleId, $user)
+	{
+		//check the users group
+		$authorizers = Sentry::findGroupByName('Authorizers');
+		$admins = Sentry::findGroupByName('Admin');
+		//DLN authorizers
+		if(Sentry::getUser()->inGroup($authorizers)) {
+			return $assets = Asset::where('role_id',$roleId)->get();
+		}
+		else if(Sentry::getUser()->inGroup($admins)) {
+			return $assets = Asset::where('role_id',$roleId)->get();
+		}
+		else{
+			return $assets = Asset::where('role_id',$roleId)->where('unit_id', $user->unit_id)->get();
+		}
+	}
+	
     public function depreciation()
     {
         return $this->model->belongsTo('Depreciation','depreciation_id');

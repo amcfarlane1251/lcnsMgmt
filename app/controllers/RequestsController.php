@@ -291,7 +291,7 @@ class RequestsController extends \BaseController {
 			}
 			//asset checkin
 			else if($request->asset_id){
-				return View::make('backend/requests/license/checkin/view')->with('request', $request)->with('asset', Asset::find($request->asset_id));
+				return View::make('backend/requests/asset/checkin/view')->with('request', $request)->with('asset', Asset::find($request->asset_id));
 			}
 		}
 		else if($request->type=='move') {
@@ -364,10 +364,10 @@ class RequestsController extends \BaseController {
 			$return = $request->store($lcnsTypes, $userStatus, $accountParams);
 		}
 		if($return['success']){
-				return Redirect::to('request?type='.$return['type'])->with('success', $return['message']);
-			}
-			else{
-				return Redirect::back()->with('error', $return['message'])->with('status',$userStatus)->withInput();
+			return Redirect::to('request?type='.$return['type'])->with('success', $return['message']);
+		}
+		else{
+			return Redirect::back()->with('error', $return['message'])->with('status',$userStatus)->withInput();
 		}
 	}
 
@@ -426,7 +426,14 @@ class RequestsController extends \BaseController {
 			return View::make('backend/requests/license/approve')->with('request',$request);
 		}
 		else if($request->type=='checkin') {
-			return View::make('backend/requests/license/checkin/approve')->with('request',$request)->with('license', LicenseSeat::find($request->license_id)->license);
+			//license checkin
+			if($request->license_id){
+				return View::make('backend/requests/license/checkin/approve')->with('request', $request)->with('license', LicenseSeat::find($request->license_id)->license);
+			}
+			//asset checkin
+			else if($request->asset_id){
+				return View::make('backend/requests/asset/checkin/approve')->with('request', $request)->with('asset', Asset::find($request->asset_id));
+			}
 		}
 		elseif($request->type=='move') {
 			return View::make('backend/requests/license/move/approve')->with('request', $request)->with('license', LicenseSeat::find($request->license_id));
