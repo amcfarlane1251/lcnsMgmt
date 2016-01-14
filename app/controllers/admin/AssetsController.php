@@ -28,6 +28,7 @@ use TCPDF;
 use Slack;
 use Role;
 use Illuminate\Http\Request;
+use URL;
 
 class AssetsController extends AdminController
 {
@@ -58,26 +59,22 @@ class AssetsController extends AdminController
         }
         
         //get the assets
-        $assets = Asset::where('role_id', $roleId)->get();
+        //$assets = Asset::where('role_id', $roleId)->get();
+		$assets = Asset::listByRole($roleId, $user);
 
         foreach($assets as $key => $asset){
+			$assets[$key]->unit = $asset->unit ? $asset->unit->name : '';
             $assets[$key]->role = $asset->roles->role;
-            $assets[$key]->status = $asset->assetstatus->name;
-            ($assets[$key]->rtd_location_id ? $assets[$key]->location = $asset->defaultLoc->name : $assets[$key]->location = '');
-            
-            if($user->hasAccess('admin'))
-            {
-                if (($assets[$key]->assigned_to !='') && ($assets[$key]->assigned_to > 0))
-                {
-                    $assets[$key]->inOut = '<a href="'.route('checkin/hardware', $assets[$key]->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
-                } 
-                else 
-                {
-                    $assets[$key]->inOut = '<a href="'.route('checkout/hardware', $assets[$key]->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
-                }
-
-                if ($assets[$key]->deleted_at=='')
-                {
+            if ($asset->assignedTo) {
+				$assets[$key]->owner = $asset->assignedTo->first_name." ".$asset->assignedTo->last_name;
+                $assets[$key]->inOut = '<a href="'.URL::to("request/create?type=checkin&asset_id={$asset->id}").'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
+            }
+			else{
+				$assets[$key]->owner = '';
+				$assets[$key]->inOut = '';
+			}
+            if($user->hasAccess('admin')) {
+                if ($assets[$key]->deleted_at=='') {
                     $assets[$key]->actions = '<a href="'.route('update/hardware', $assets[$key]->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a>';
                     $assets[$key]->actions .= ' <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $assets[$key]->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($assets[$key]->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
                 }

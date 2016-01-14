@@ -142,37 +142,45 @@ class Requests extends Elegant
 	}
 	
 
-	public function store($lcnsTypes, $userStatus, $account)
+	public function store($lcnsTypes = null, $userStatus = null, $account = null)
 	{	
-		if($userStatus=='existing') {
-			//overide account
-			$account = Account::where('username', $account->username)->first();
-			$this->account_id = $account->id;
+		if($lcnsTypes == null && $userStatus == null && $account == null) {
 			$this->dbStore();
+			
+			$success = Lang::get('admin/request/message.success.create');
+			return array('success'=>1,'message'=>$success,'type'=>$this->type);
 		}
 		else{
-			$id = $account->store();
-			
-			$this->account_id = $id;
-			$account->created_from = $this->dbStore();
-			$account->save();
-		}
-
-		//license types to be added
-		foreach($lcnsTypes as $lcnsType){
-			if(!in_array($lcnsType, $this->licenseTypes()->lists('id'))) {
-				$this->licenseTypes()->attach($lcnsType);
+			if($userStatus=='existing') {
+				//overide account
+				$account = Account::where('username', $account->username)->first();
+				$this->account_id = $account->id;
+				$this->dbStore();
 			}
-		}
-		//license types to be removed
-		foreach($this->licenseTypes()->lists('id') as $id){
-			if(!in_array($id, $lcnsTypes)) {
-				$this->licenseTypes()->detach($id);
-			}
-		}
+			else{
+				$id = $account->store();
 
-		$success = Lang::get('admin/request/message.success.create');
-		return array('success'=>1,'message'=>$success,'type'=>$this->type);
+				$this->account_id = $id;
+				$account->created_from = $this->dbStore();
+				$account->save();
+			}
+
+			//license types to be added
+			foreach($lcnsTypes as $lcnsType){
+				if(!in_array($lcnsType, $this->licenseTypes()->lists('id'))) {
+					$this->licenseTypes()->attach($lcnsType);
+				}
+			}
+			//license types to be removed
+			foreach($this->licenseTypes()->lists('id') as $id){
+				if(!in_array($id, $lcnsTypes)) {
+					$this->licenseTypes()->detach($id);
+				}
+			}
+
+			$success = Lang::get('admin/request/message.success.create');
+			return array('success'=>1,'message'=>$success,'type'=>$this->type);
+		}
 	}
 	
 	public function dbStore()
@@ -238,12 +246,29 @@ class Requests extends Elegant
 				}
 			}
 			elseif($this->type=='checkin') {
-				$seat = LicenseSeat::find($this->license_id);
-				$seat->checkIn();
-				if($this->pc_name) {
-					$asset = Asset::findByName($this->pc_name);
-					if($asset->licenseCount() <= 0) {
-						$asset->checkIn();	
+				//asset checkin
+				if($this->license_id == null) {
+					$asset = Asset::find($this->asset_id);
+					
+					//check-in the license seats
+					$licenseSeats =  $asset->licenseseats;
+					foreach($licenseSeats as $seat) {
+						$seat->checkIn();
+					}
+					
+					//check-in the asset
+					$asset->checkIn();
+					
+				}
+				//license checkin
+				else{
+					$seat = LicenseSeat::find($this->license_id);
+					$seat->checkIn();
+					if($this->pc_name) {
+						$asset = Asset::findByName($this->pc_name);
+						if($asset->licenseCount() <= 0) {
+							$asset->checkIn();	
+						}
 					}
 				}
 			}

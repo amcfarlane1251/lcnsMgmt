@@ -13,9 +13,9 @@
 			<tr>
 				<td>Asset Name</td>
 				<td>Asset Tag</td>
+				<td>Owner</td>
+				<td>Unit</td>
 				<td>Environmental Command</td>
-				<td>Status</td>
-				<td>Location</td>
 				<td>In/Out</td>
 				<td>Actions</td>
 			</tr>
@@ -26,9 +26,9 @@
 			<tr>
 				<td>{{$obj->name}}</td>
 				<td><a href="{{URL::to('hardware/'.$obj->id)}}"> {{$obj->asset_tag}} </a></td>
+				<td>{{$obj->owner}}</td>
+				<td>{{$obj->unit}}</td>
 				<td>{{$obj->role}}</td>
-				<td>{{$obj->status}}</td>
-				<td>{{$obj->location}}</td>
 				<td>{{$obj->inOut}}</td>
 				<td>{{$obj->actions}}</td>
 			</tr>
