@@ -76,7 +76,11 @@
 					<tr>
 						<td>{{$licenseSeat->license->name}}</td>
 						<td>{{$licenseSeat->updated_at}}</td>
-						<td><a href="{{URL::to('licenses/'.$licenseSeat->id)}}" class='checkin-license btn btn-primary btn-xs'>Check In</a></td>
+						@if($licenseSeat->request)
+							<td><a href="{{URL::to('licenses/'.$licenseSeat->id)}}" class='checkin-license btn btn-primary btn-xs'>Cancel Request</a></td>
+						@elseif($licenseSeat->account)
+							<td><a href="{{URL::to('licenses/'.$licenseSeat->id)}}" class='checkin-license btn btn-primary btn-xs'>Check In</a></td>
+						@endif
 					</tr>
 				@endforeach
 			</tbody>

@@ -155,7 +155,7 @@ class RequestsController extends \BaseController {
 				->with('action', 'POST');
 		}
 		else if($type=='checkin') {
-			return View::make('backend/requests/license/checkin/edit')
+			return View::make('backend/requests/asset/checkin/edit')
 				->with('asset', Asset::find(Input::get('asset_id')));
 		}
 		else if($type=='move') {
