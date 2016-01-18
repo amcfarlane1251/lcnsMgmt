@@ -28,6 +28,13 @@ return array(
 	'Navy LSC' => 'Navy LCS Requests',
 	'RCAF' => 'RCAF Requests',
 
+	'lcnsInfo' => 'License Information',
+	'lcnsName' => 'License Name',
+	
+	'assetName.remove' => 'Asset To Remove From License',
+	
+	'accountInfo' => 'Account Information',
+	'account.remove' => 'Account To Remove From License',
 
 	'message.success.create' => 'Your request has been submitted',
 	'message.success.delete' => 'The request has been removed',
@@ -46,7 +53,6 @@ return array(
 	'type' => 'License Type',
 	'approve' => 'Approve?',
 	'dateReq' => 'Date Requested',
-	'accountInfo' => 'Account Information',
 	'for' => 'Request For',
 	'status' => 'Status',
 	'status.bmo' => 'Awaiting BMO Approval',

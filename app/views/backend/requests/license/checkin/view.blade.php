@@ -34,38 +34,27 @@
 		<div>
 			<label>@lang('request.requester'):</label> {{$request->owner->first_name." ".$request->owner->last_name}} 
 		</div>
-		@if($request->pc_name)
-			<div class="row transition-block">
-				<div class="col-sm-5">
-					<label>@lang('request.pcName.original'):</label> {{$request->pc_name}}
-				</div>
-				<div class="col-sm-2">
-					<i class="fa fa-long-arrow-right" style="font-size:2.25rem;"></i>
-				</div>
-				<div class="col-sm-5">
-					<label>@lang('request.pcName.empty')</label>
-				</div>
-			</div>
-		@endif
 
 		<h2>@lang('request.accountInfo')</h2>
-		<div class="row transition-block">
-			<div class="col-sm-5">
-				<label>@lang('account.username.original'):</label> <p>{{($request->account ? $request->account->username : '')}}</p>
-				<label>@lang('account.name.original'):</label> <p>{{$request->account ? $request->account->first_name." ".$request->account->last_name : ''}}</p>
+			<h4>@lang('request.account.remove')</h4>
+			<div>
+				<label>@lang('account.username'): </label> {{($request->account ? $request->account->username : '')}}
 			</div>
-			<div class="col-sm-2">
-				<i class="fa fa-long-arrow-right" style="font-size:2.25rem;"></i>
+			<div>
+				<label>@lang('account.name'): </label> {{$request->account ? $request->account->first_name." ".$request->account->last_name : ''}}
 			</div>
-			<div class="col-sm-5">
-				<label>@lang('request.userInfo.empty')</label>
-			</div>
-		</div>
 	</div>
 
 	<div class="col-md-6 item-details">
-		<h2>@lang('request.requestedLcns')</h2>
-		<div><a href="">{{$license->name}}</a></div>
+		<h2>@lang('request.lcnsInfo')</h2>
+		<div>
+			<label>@lang('request.lcnsName'):</label> {{$request->licenseSeat->license->name}}
+		</div>
+		@if($request->pc_name)
+			<div>
+				<label>@lang('request.assetName.remove'):</label> {{$request->pc_name}}
+			</div>
+		@endif
 	</div>
 </div>
 
