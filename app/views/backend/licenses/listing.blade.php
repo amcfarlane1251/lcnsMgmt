@@ -20,7 +20,7 @@
 			</tr>
 		</thead>
 
-		<tbody>
+		<tbody data-base-url="{{URL::to('/')}}" data-license-url="{{URL::to('/licenses?roleId='.$roleId)}}">
 			@foreach($licenses as $obj)
 			<tr>
 				<td>{{$obj->name}}</td>
@@ -28,7 +28,7 @@
 				<td>{{( !empty($obj->request) ? "<a href='".URL::to('request/'.$obj->request->id)."'>".Lang::get('admin/licenses/general.in_request')."</span>" : $obj->assignedUser )}}</td>
 				<td>{{$obj->updatedAt}}</td>
 				@if($obj->request)
-					<td><a href="{{URL::to('licenses/'.$obj->id)}}" class="cancel-request btn btn-primary btn-xs">Cancel Request?</a></td>
+					<td><a href="{{URL::to('request/'.$obj->request->id)}}" class="delete-request btn btn-primary btn-xs">Cancel Request?</a></td>
 				@elseif($obj->assignedUser || $obj->assignedAsset)
 					<td>
 						<a href="{{URL::to('licenses/'.$obj->id)}}" class='checkin-license btn btn-primary btn-xs'>Check In</a>

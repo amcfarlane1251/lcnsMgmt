@@ -69,7 +69,7 @@ class LicensesController extends AdminController
         if($this->request->ajax())
         {
             header('Content-Type: application/json');
-            echo json_encode($licenses);
+            echo json_encode(array('licenses'=>$licenses));
         }
         else
         {
@@ -989,7 +989,7 @@ class LicensesController extends AdminController
         $action = Input::get('action');
 
         if($action=='checkin') {
-            return json_encode($this->checkin($license));
+            echo json_encode($this->checkin($license));
         }
     }
 
