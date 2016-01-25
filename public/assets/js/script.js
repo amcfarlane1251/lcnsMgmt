@@ -26,7 +26,7 @@ $(function(){
 	});
 	
 	//confirm delete request
-	$('#ec-assets .delete-request').confirm({
+	$('.delete-request').confirm({
 		text: "Are you sure you want to delete this request?",
 		title: "Confirmation Required",
 		confirm: function(b){
@@ -77,10 +77,9 @@ $(function(){
 	//update the ui
 	function updateTable(b)
 	{
-		//declare vars
-		var tbody;
-		//refresh the table body
-		tbody = b.parent().parent('tr').parent('tbody');
+		//set local vars and empty table body
+		var tbody = b.parent().parent('tr').parent('tbody');
+		var table = tbody.parent('table');
 		tbody.empty();
 		
 		$.ajax({
@@ -120,15 +119,29 @@ $(function(){
 				else{
 					action = '';
 				}
-				tbody.append(
-					"<tr>"+
-						"<td>"+licenses[i].name+"</td>"+
-						"<td>"+licensedTo+"</td>"+
-						"<td>"+userAssigned+"</td>"+
-						"<td>"+licenses[i].updatedAt+"</td>"+
-						"<td>"+action+"</td>"+
-					"</tr>"
-				);
+				
+				//append row depending on view
+				console.log(table.attr('id'));
+				if(table.attr('id') == 'asset-licenses') {
+					tbody.append(
+						"<tr>"+
+							"<td>"+licenses[i].name+"</td>"+
+							"<td>"+licenses[i].updatedAt+"</td>"+
+							"<td>"+action+"</td>"+
+						"</tr>"
+					);
+				}
+				else{
+					tbody.append(
+						"<tr>"+
+							"<td>"+licenses[i].name+"</td>"+
+							"<td>"+licensedTo+"</td>"+
+							"<td>"+userAssigned+"</td>"+
+							"<td>"+licenses[i].updatedAt+"</td>"+
+							"<td>"+action+"</td>"+
+						"</tr>"
+					);
+				}
 			}
 		}).fail(function(data){
 			
@@ -140,7 +153,7 @@ $(function(){
 		// check for any new element being inserted here,
 		// or a particular node being modified
 
-		$('#ec-assets .delete-request').confirm({
+		$('.delete-request').confirm({
 			text: "Are you sure you want to delete this request?",
 			title: "Confirmation Required",
 			confirm: function(b){

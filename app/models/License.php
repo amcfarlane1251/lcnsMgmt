@@ -277,7 +277,7 @@ class License extends Depreciable
             })->count();
     }
 
-    public static function getByRole($roleId, $unitId = null)
+    public static function getByRole($roleId, $unitId = null, array $wheres = null)
     {
         $query = DB::table('licenses')
                         ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
@@ -286,6 +286,13 @@ class License extends Depreciable
                         ->orderBy('name', 'ASC')
                         ->select('licenses.name', 'license_seats.*');
 		if(isset($unitId)) {$query->where('license_seats.unit_id', $unitId);}
+		
+		if(!is_null($wheres)) {
+			foreach($wheres as $key => $value) {
+				$query->where('license_seats.'.$key, $value);
+			}
+		}
+		
 		$licenses = $query->get();
         $lcnsObj = array();
 

@@ -49,20 +49,26 @@ class LicensesController extends AdminController
         //get user role
         $user = Sentry::getUser();
         $role = $user->role;
+		$roleId = '';
+		$wheres = array();
 
         //get role id
-        (Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = '');
+        (Input::get('roleId') ? $roleId = Input::get('roleId') : '');
 
         if($role->role != 'All' && $role->id != $roleId) {
             return Redirect::to('/')->with('error', 'Cannot access that EC');
         }
+		
+		//get filtering params and populate the array
+		(Input::get('assetId') ? $wheres['asset_id'] = Input::get('assetId') : '');
 
         //get the licenses object and the role key for language files
 		if( $user->inGroup(Sentry::findGroupByName('Requestors')) ) {
-			$licenses = License::getByRole($roleId, $user->unit_id);
+			
+			$licenses = License::getByRole($roleId, $user->unit_id, $wheres);
 		}
 		else{
-			$licenses = License::getByRole($roleId);
+			$licenses = License::getByRole($roleId, null, $wheres);
 		}
         $roleKey = Role::getRoleById($roleId); $roleKey = $roleKey[0];
 

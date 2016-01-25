@@ -63,7 +63,7 @@
 	
 	<section class="assigned-licenses">
 		<h3>{{Lang::get('admin/hardware/general.licenses')}}</h3>
-		<table class="table table-hover">
+		<table class="table table-hover" id="asset-licenses">
 			<thead>
 				<tr>
 					<td>Name</td>
@@ -71,13 +71,13 @@
 					<td>Actions</td>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody data-base-url="{{URL::to('/')}}" data-license-url="{{URL::to('/licenses?roleId='.$asset->role_id.'&assetId='.$asset->id)}}">
 				@foreach($asset->licenseseats as $licenseSeat)
 					<tr>
 						<td>{{$licenseSeat->license->name}}</td>
 						<td>{{$licenseSeat->updated_at}}</td>
 						@if($licenseSeat->request)
-							<td><a href="{{URL::to('licenses/'.$licenseSeat->id)}}" class='checkin-license btn btn-primary btn-xs'>Cancel Request</a></td>
+							<td><a href="{{URL::to('request/'.$licenseSeat->request->id)}}" class='delete-request btn btn-primary btn-xs'>Cancel Request</a></td>
 						@elseif($licenseSeat->account)
 							<td><a href="{{URL::to('licenses/'.$licenseSeat->id)}}" class='checkin-license btn btn-primary btn-xs'>Check In</a></td>
 						@endif
