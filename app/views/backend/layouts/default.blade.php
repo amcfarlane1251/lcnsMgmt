@@ -52,6 +52,7 @@
         <script src="{{ asset('assets/js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('assets/js/dataTables.colVis.js') }}"></script>
         <script src="{{ asset('assets/js/dataTables.tableTools.js') }}"></script>
+		<script src="{{ asset('assets/js/jquery.confirm.min.js') }}"></script>
         <script src="{{ asset('assets/js/Requests.js') }}"></script>
         <script src="{{ asset('assets/js/ToggleHelper.js') }}"></script>
 
@@ -405,7 +406,6 @@
     <script src="{{ asset('assets/js/bootstrap.datepicker.js') }}"></script>
     <script src="{{ asset('assets/js/theme.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.maskedinput.min.js') }}"></script>
-    <script src="{{ asset('assets/js/jquery.confirm.min.js') }}"></script>
     <script src="{{ asset('assets/js/snipeit.js') }}"></script>
     <script src="{{ asset('assets/js/script.js') }}"></script>
 	<script>

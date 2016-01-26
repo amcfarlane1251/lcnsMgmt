@@ -100,10 +100,10 @@ class RequestsController extends \BaseController {
 				
 				//delete
 				if( $user->role->id == $requests[$key]->role_id || in_array('Authorizers',$user->group()) ) {
-					$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='delete-request'><i class='fa fa-trash icon-white'></i></a>";
+					$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='del-request'><i class='fa fa-trash icon-white'></i></a>";
 				}
 				elseif( in_array('Admin',$user->group()) ){
-					$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='delete-request'><i class='fa fa-trash icon-white'></i></a>";
+					$return[$key]->actions .= "<a href=".URL::to('request/'.$requests[$key]->id)." class='del-request'><i class='fa fa-trash icon-white'></i></a>";
 				}
 				//edit
 				if( ($user->hasAccess('authorize') || $user->role->id == $requests[$key]->role_id) && empty($request->request_code) ){

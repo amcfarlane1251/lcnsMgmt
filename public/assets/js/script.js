@@ -121,7 +121,6 @@ $(function(){
 				}
 				
 				//append row depending on view
-				console.log(table.attr('id'));
 				if(table.attr('id') == 'asset-licenses') {
 					tbody.append(
 						"<tr>"+

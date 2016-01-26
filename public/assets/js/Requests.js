@@ -14,7 +14,7 @@ Requests.prototype.setProperties = function()
 	this.role = $('.btn-group').data('role');
 	this.table = $('#requests table');
 	this.tableRow = '';
-	this.deleteBtn = '.delete-request';
+	this.deleteBtn = '.del-request';
 	this.toggleBtn = '.btn-group button';
         this.clear = false;
 	
@@ -24,13 +24,35 @@ Requests.prototype.setProperties = function()
 Requests.prototype.init = function()
 {
 	that.populateRequests();
+	
+	that.checkDomChange();
+	
 	that.container.on('click', that.toggleBtn, that.toggleTypes);
-	that.container.on('click', that.deleteBtn, that.delete);
 }
 
 Requests.prototype.populateRequests = function()
 {
 	that.getRequests();
+}
+
+Requests.prototype.checkDomChange = function()
+{
+	$(that.deleteBtn).confirm({
+		text: "Are you sure you want to delete this request?",
+		title: "Confirmation Required",
+		confirm: function(b){
+			that.delete(b);
+		},
+		cancel: function(b){
+
+		},
+		confirmButton:"Yes I am",
+		cancelButton:"No",
+		confirmButtonClass: "btn-danger",
+		cancelButtonClass: "btn-default",
+	});
+	
+	setTimeout(that.checkDomChange,500);
 }
 
 Requests.prototype.toggleTypes = function(e)
@@ -126,19 +148,17 @@ Requests.prototype.clearTable = function(_callback)
 	$.when(that.table.find('tbody').empty()).then(_callback());
 }
 
-Requests.prototype.delete = function(e)
-{
-	e.preventDefault() ? e.preventDefault() : e.returnValue = false;
-	var reqId = $(e.target).parents('tr').attr('id');
-	var url = $(e.target).parent('a').attr('href');
+Requests.prototype.delete = function(b)
+{	
+	var reqId = $(b).parents('tr').attr('id');
+	var url = $(b).attr('href');
 
 	$.ajax({
 		url:url,
 		type:'DELETE',
 		dataType:'json',
-		success:function(data){
-			if(!data.error)
-			{
+		success:function(data, status, xhr){
+			if(!data.error && xhr.status == 200) {
 				var row = $('tr#'+reqId);
 			
 				row.find('td').css('background-color', 'transparent');
