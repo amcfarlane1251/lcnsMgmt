@@ -172,7 +172,7 @@ $(function(){
 			text: "Are you sure you want to check in this license?",
 			title: "Confirmation Required",
 			confirm: function(b){
-				request(b, 'checkin');
+				sendRequest(b, 'checkin');
 			},
 			cancel: function(b){
 
