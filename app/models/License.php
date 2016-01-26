@@ -281,8 +281,9 @@ class License extends Depreciable
     {
         $query = DB::table('licenses')
                         ->join('license_seats', 'licenses.id', '=', 'license_seats.license_id')
+						->join('accounts', 'license_seats.assigned_to', '=', 'accounts.id')
                         ->where('licenses.role_id', $roleId)
-				        ->orderBy('license_seats.assigned_to', 'ASC')
+				        ->orderBy('accounts.first_name', 'ASC')
                         ->orderBy('license_seats.updated_at', 'DESC')
                         ->select('licenses.name', 'license_seats.*');
 		if(isset($unitId)) {$query->where('license_seats.unit_id', $unitId);}
