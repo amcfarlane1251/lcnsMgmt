@@ -20,10 +20,20 @@
 
 <h1>@lang('general.dashboard')</h1>
 <div class="row">
-
+	<div class="col-md-12 top-bar">
+		<h3 id="unit-name">{{$unit->name}}</h3>
+		<div class="form-group">
+			<label for="unit-selector">Select Unit:</label>
+			<select id="unit-selector" class="">
+				@foreach($units as $unit)
+					<option value='{{$unit->id}}'>{{$unit->name}}</option>
+				@endforeach
+			</select>
+		</div>
+	</div>
 	<div class="col-md-6">
-		<h2>@lang('admin/licenses/general.info')</h2>
-		<table class="table table-striped">
+		<h4>@lang('admin/licenses/general.info')</h4>
+		<table id="license-info" class="table table-striped">
 			<thead>
 				<tr>
 					<td>Type</td>
@@ -46,7 +56,7 @@
 	</div>
 
 	<div class="col-md-6 chart">
-		<h2>@lang('Percentage Allocated by Type')</h2>
+		<h4>@lang('Percentage Allocated by Type')</h4>
 		<div id="hero-lcns" style="height: 250px;"></div>
 	</div>
 
@@ -54,8 +64,8 @@
 
 <div class="row">
 	<div class="col-md-6">
-		<h2>@lang('admin/hardware/general.info')</h2>
-		<table class="table table-striped">
+		<h4>@lang('admin/hardware/general.info')</h4>
+		<table id="asset-info" class="table table-striped">
 			<thead>
 				<tr>
 					<td>Model</td>
@@ -78,6 +88,11 @@
 	</div>
 </div>
 
+@section('scripts')
+	<script src="{{ asset('assets/js/dashboard.js') }}"></script>
+@parent
+@stop
+
 <!-- build the charts -->
 <script type="text/javascript">
     // Morris Donut Chart
@@ -91,7 +106,6 @@
         colors: ["#30a1ec", "#76bdee", "#c4dafe"],
         formatter: function (y) { return y + "%" }
     });
-
 </script>
 
 @stop

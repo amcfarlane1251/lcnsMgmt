@@ -7,7 +7,7 @@
   background: #e74c3c; }
 
 td.actions a ~ a {
-  margin: 0 .667rem; }
+  margin: 0 0 0 .667rem; }
 
 form .btn-group {
   margin-bottom: 1rem; }
@@ -18,5 +18,29 @@ form .alert-success {
 
 .item-details {
   margin: 1rem 0; }
+
+.top-bar {
+  margin: 1.5rem 0; }
+  .top-bar .form-group {
+    margin-top: 1rem;
+    margin-bottom: 0; }
+
+/*
+ ** Approve Move Request Page
+ **
+ */
+.transition-block {
+  display: table;
+  width: 100%;
+  margin-bottom: 2.25rem; }
+  .transition-block div {
+    float: none;
+    display: table-cell;
+    vertical-align: middle; }
+    .transition-block div label {
+      display: block;
+      margin-bottom: 0; }
+    .transition-block div p {
+      margin: 0; }
 
 /*# sourceMappingURL=styles.css.map */

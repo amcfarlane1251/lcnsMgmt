@@ -49,22 +49,33 @@ class LicensesController extends AdminController
         //get user role
         $user = Sentry::getUser();
         $role = $user->role;
+		$roleId = '';
+		$wheres = array();
 
         //get role id
-        (Input::get('roleId') ? $roleId = Input::get('roleId') : $roleId = '');
+        (Input::get('roleId') ? $roleId = Input::get('roleId') : '');
 
         if($role->role != 'All' && $role->id != $roleId) {
             return Redirect::to('/')->with('error', 'Cannot access that EC');
         }
+		
+		//get filtering params and populate the array
+		(Input::get('assetId') ? $wheres['asset_id'] = Input::get('assetId') : '');
 
         //get the licenses object and the role key for language files
-        $licenses = License::getByRole($roleId);
+		if( $user->inGroup(Sentry::findGroupByName('Requestors')) ) {
+			
+			$licenses = License::getByRole($roleId, $user->unit_id, $wheres);
+		}
+		else{
+			$licenses = License::getByRole($roleId, null, $wheres);
+		}
         $roleKey = Role::getRoleById($roleId); $roleKey = $roleKey[0];
 
         if($this->request->ajax())
         {
             header('Content-Type: application/json');
-            echo json_encode($licenses);
+            echo json_encode(array('licenses'=>$licenses));
         }
         else
         {
@@ -984,7 +995,7 @@ class LicensesController extends AdminController
         $action = Input::get('action');
 
         if($action=='checkin') {
-            return json_encode($this->checkin($license));
+            echo json_encode($this->checkin($license));
         }
     }
 

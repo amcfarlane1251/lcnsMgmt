@@ -21,6 +21,31 @@ class Asset extends Depreciable
         'status' 			=> 'integer'
         );
 
+	public static function findByName($name)
+	{
+		$asset = Asset::where('asset_tag', $name)->first();
+		if($asset) {
+			return Asset::find($asset->id);
+		}
+	}
+	
+	public static function listByRole($roleId, $user)
+	{
+		//check the users group
+		$authorizers = Sentry::findGroupByName('Authorizers');
+		$admins = Sentry::findGroupByName('Admin');
+		//DLN authorizers
+		if(Sentry::getUser()->inGroup($authorizers)) {
+			return $assets = Asset::where('role_id',$roleId)->get();
+		}
+		else if(Sentry::getUser()->inGroup($admins)) {
+			return $assets = Asset::where('role_id',$roleId)->get();
+		}
+		else{
+			return $assets = Asset::where('role_id',$roleId)->where('unit_id', $user->unit_id)->get();
+		}
+	}
+	
     public function depreciation()
     {
         return $this->model->belongsTo('Depreciation','depreciation_id');
@@ -43,6 +68,11 @@ class Asset extends Depreciable
             ->orderBy('created_at', 'desc');
     }
 
+	public function assignedTo()
+	{
+		return $this->belongsTo('Account', 'assigned_to');
+	}
+	
     public function assigneduser()
     {
         return $this->belongsTo('User', 'assigned_to')->withTrashed();
@@ -239,13 +269,28 @@ class Asset extends Depreciable
     }
 
     /**
+     * Get unit information
+    */
+    public function unit()
+	{
+        return $this->belongsTo('Unit', 'unit_id');
+    }
+	
+    /**
      * Get role information
     */
-    public function roles() {
+    public function roles()
+	{
         return $this->belongsTo('Role', 'role_id');
     }
 
-
+	/**
+	 * Count how many licenses belong to this asset
+	 */
+	public function licenseCount()
+	{
+		return $this->hasMany('LicenseSeat', 'asset_id', 'id')->count();
+	}
 
 	/**
 	-----------------------------------------------
@@ -374,13 +419,14 @@ class Asset extends Depreciable
 		return $query->whereNotNull('deleted_at');
 	}
 
-    public function populateDashboard($roleId)
+    public function populateDashboard($roleId, $unitId)
     {
         //get asset info
         $allAssets = DB::table('models')
                     ->join('assets', 'assets.model_id', '=','models.id')
-                    ->orwhere(function ($query) use ($roleId) {
-                        $query->where('assets.role_id', $roleId);
+                    ->orwhere(function ($query) use ($roleId, $unitId) {
+                        $query->where('assets.role_id', $roleId)
+							  ->where('assets.unit_id', $unitId);
                         $query->where('assets.deleted_at', NULL);
                     })->get();
         $assets = array();        
@@ -407,4 +453,11 @@ class Asset extends Depreciable
 
         return $assets;
     }
+	
+	public function checkIn()
+	{
+		$this->assigned_to = NULL;
+		$this->unit_id = NULL;
+		$this->save();
+	}
 }

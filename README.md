@@ -1,72 +1,11 @@
-[![Click here to lend your support to: Snipe IT - Free Open Source Asset Management System and make a donation at pledgie.com](https://pledgie.com/campaigns/22899.png?skin_name=chrome)](https://pledgie.com/campaigns/22899) [![Build Status](https://travis-ci.org/snipe/snipe-it.svg?branch=develop)](https://travis-ci.org/snipe/snipe-it) [![Stories in Ready](https://badge.waffle.io/snipe/snipe-it.png?label=ready&title=Ready)](http://waffle.io/snipe/snipe-it) [![ProjectStatus](http://stillmaintained.com/snipe/snipe-it.png)](http://stillmaintained.com/snipe/snipe-it) [![Crowdin](https://d322cqt584bo4o.cloudfront.net/snipe-it/localized.png)](https://crowdin.com/project/snipe-it)
+##Installation
+After you clone the git repo, change directory to project root and install the following dependencies
 
+###Composer
+curl -sS https://getcomposer.org/installer | php
 
-## Snipe-IT - Asset Management For the Rest of Us
+###App Dependencies
+php composer.phar install --no-dev --prefer-source
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/snipe/snipe-it?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-This is a FOSS project for asset management in IT Operations. Knowing who has which laptop, when it was purchased in order to depreciate it correctly, handling software licenses, etc.
-
-It is built on [Laravel 4.2](http://laravel.com) and uses the [Sentry 2](https://github.com/cartalyst/sentry) package.
-
-This project is being actively developed and we're [releasing quite frequently](https://github.com/snipe/snipe-it/releases). ([Check out the live demo here](http://snipeitapp.com/demo/).)
-
-__This is web-based software__. This means there there is no executable file (aka no .exe files), and it must be run on a web server and accessed through a web browser. It runs on any Mac OSX, flavor of Linux, as well as Windows.
-
------
-### Documentation & Installation
-
-__Installation and configuration documentation for this project has been moved to http://snipeitapp.com/documentation/.__
-
-We'll be adding a long-overdue user's manual soon as well.
-
-__To deploy on Ubuntu using Ansible and Vagrant, be sure to check out the [Snipe-IT Installation scripts](https://github.com/GR360RY/snipeit-ansible) created by [@GR360RY](https://github.com/GR360RY/).__
-
------
-### Bug Reports & Feature Requests
-
-Feel free to check out the [GitHub Issues for this project](https://github.com/snipe/snipe-it/issues) to open a bug report or see what open issues you can help with. Please search through existing issues (open and closed) to see if your question hasn't already been answered before opening a new issue.
-
-We use Waffle.io to help better communicate our roadmap with users. Our [project page there](http://waffle.io/snipe/snipe-it) will show you the backlog, what's ready to be worked on, what's in progress, and what's completed.
-
-[![Stories in Ready](https://badge.waffle.io/snipe/snipe-it.png?label=ready&title=Ready)](http://waffle.io/snipe/snipe-it)
-
------
-### Announcement List
-
-To be notified of important news (such as new releases, security advisories, etc), [sign up for our list](http://eepurl.com/XyZKz). We'll never sell or give away your info, and we'll only email you when it's important.
-
-
-### Translations!
-
-If you're not a coder but want to give back to the project and you're fluent in other languages, consider helping out with the translations. We use [CrowdIn](https://crowdin.com) to manage translations, and it makes it super-simple for you to add translations to the project without messing with code. Check out [the Snipe-IT CrowdIn translation project here](https://crowdin.com/project/snipe-it/).
-
-We currently have English, Chinese, Finnish, Malay, Romanian and Spanish completed, and are looking for lots more!
-
------
-## Requirements
-
-- PHP 5.4 or later
-- MCrypt PHP Extension
-- Fileinfo Extension
-
-And _one_ of the following image libraries (for QR codes, asset model image and user avatar image uploads).
-
-- GD Library (>=2.0) … or …
-- Imagick PHP extension (>=6.3.8)
-
------
-
-## Important Notes on Updating
-
-Whenever you pull down a new version from master or develop, when you grab the [latest official release](https://github.com/snipe/snipe-it/releases), make sure to run the following commands via command line:
-
-	php composer.phar dump-autoload
-	php artisan migrate
-
-Forgetting to do this can mean your DB might end up out of sync with the new files you just pulled, or you may have some funky cached autoloader values. It's a good idea to get into the habit of running these every time you pull anything new down. If there are no database changes to migrate, it won't hurt anything to run migrations anyway.
-
-## Contributor Code of Conduct
-
-Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
-
+###Run Install
+php artisan app:install --env=production

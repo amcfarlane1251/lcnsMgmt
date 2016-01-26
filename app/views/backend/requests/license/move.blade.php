@@ -1,10 +1,9 @@
 @extends('backend/layouts/default')
 
 @section('title')
-	@lang('requests.title')
+	@lang('request.moveLicense')
 @parent
 @stop
-
 
 {{-- Page content --}}
 @section('content')
@@ -15,82 +14,70 @@
 		@if($action=='PUT')
 			<h3>@lang('request.edit')</h3>
 		@else
-			<h3> @lang('request.requestLicense') </h3>
+			<h3> @lang('request.moveLicense') </h3>
 		@endif
 	</div>
 
 	<div class="row form-wrapper">
 		<div class="col-md-12 column">
 			{{ Form::open(array('url'=>'request/'.$request->id,'class'=>'form-horizontal', 'method'=>$action)) }}
+			
 			<h3>@Lang('request.formSection')</h3>
-			{{-- Unit --}}
-			<div class="form-group {{ $errors->has('unit') ? 'has-error' : '' }}">
+			
+			{{-- License Name --}}
+			<div class="form-group">
 				<div class="col-md-2">
-					{{ Form::label('unit', Lang::get('general.unit'), array('class'=>'control-label')) }}
+					<label> {{ Lang::get('admin/licenses/general.type') }} </label>
 				</div>
 				<div class="col-md-4">
-					{{ Form::select('unit', $units ? $units : array(''), $request->unit_id, array('class'=>'form-control')) }}
-					{{ $errors->first('unit', '<br><span class="alert-msg">:message</span>') }}
+					{{$license->license->name}}
+					<input type="hidden" value="{{$license->license->licenseType->id}}" name="lcnsTypes[]" id="lcnsTypes[]"/>
 				</div>
 			</div>
-
+			
 			{{-- EC --}}
-			<div class="form-group {{ $errors->has('ec') ? 'has-error' : '' }}">
+			<div class="form-group">
 				<div class="col-md-2">
-					{{ Form::label('ec', Lang::get('general.ec'), array('class'=>'control-label')) }}
+					{{ Form::label('ec', Lang::get('general.ec')) }}
 				</div>
 				<div class="col-md-4">
-					{{ Form::select('ec', $ec, $request->role_id, array('class'=>'form-control')) }}
-					{{ $errors->first('ec', '<br><span class="alert-msg">:message</span>') }}
+					{{$license->license->role->role}}
+					<input type="hidden" value="{{$license->license->role->id}}" name="ec" id="ec"/>
 				</div>
 			</div>
-
-			{{-- License Types--}}
-			<div class="form-group {{ $errors->has('lcnsTypes') ? 'has-error' : '' }}">
+			
+			{{-- Unit --}}
+			<div class="form-group">
 				<div class="col-md-2">
-					{{ Form::label('lcnsTypes', Lang::get('admin/licenses/general.types'), array('class'=>'control-label')) }}
+					{{ Form::label('unit', Lang::get('general.unit')) }}
 				</div>
-				<div class="col-md-4" id="lcnsContainer">
-					<select name="lcnsTypes[]" id="lcnsTypes[]" multiple="multiple" class="form-control">
-						@foreach($lcnsTypes as $lcnsType)
-							@if(array_key_exists('lcnsTypes',Input::old()))
-								<option value="{{$lcnsType->id}}" data-asset-flag="{{$lcnsType->asset_flag}}"
-								{{ (in_array($lcnsType->id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}
-								{{ (in_array($lcnsType->id, Input::old('lcnsTypes')) ? 'selected="selected"' : '') }}>
-								{{{ $lcnsType->name }}}
-								</option>
-							@else
-								<option value="{{$lcnsType->id}}" data-asset-flag="{{$lcnsType->asset_flag}}"
-								{{ (in_array($lcnsType->id, $request->licenseTypes()->lists('id')) ? 'selected="selected"' : '') }}>
-								{{{ $lcnsType->name }}}
-								</option>
-							@endif
-						@endforeach
-					</select>
+				<div class="col-md-4">
+					{{$license->unit->name}}
+					<input type="hidden" value="{{$license->unit->id}}" name="unit" id="unit"/>
 				</div>
 			</div>
-
+			
 			{{-- PC Name --}}
-			<div class="form-group {{ $errors->has('pcName') || in_array(1,$request->licenseTypes()->lists('asset_flag')) ? '' : 'hidden' }} " data-toggle='pcName'>
+			<div class="form-group {{ $license->license->licenseType->asset_flag ? '' : 'hidden' }} " data-toggle='pcName'>
 				<div class="col-md-2">
 					{{ Form::label('pcName', Lang::get('request.pcName'), array('class'=>'control-label')) }}
 				</div>
 				<div class="col-md-4">
-					{{ Form::text('pcName', $request->pc_name, array('class'=>'form-control')) }}
+					{{ Form::text('pcName', ($license->asset ? $license->asset->asset_tag : ''), array('class'=>'form-control')) }}
 					{{ $errors->first('pcName', '<br><span class="alert-msg">:message</span>') }}
 				</div>
 			</div>
-
+				
 			{{-- Account --}}
 			<div class="" data-toggle='accountInfo'>
-				<h3>@Lang('account.formSection')</h3>
+				<h3>@Lang('account.move')</h3>
 				<div class="btn-group" role="group" id="user-select">
 					<h5>@Lang('account.selectOption')</h5>
 					<button type='button' class="btn btn-default" data-select="existing">Existing User?</button>
 					<button type='button' class="btn btn-default" data-select="new">New User?</button>
 				</div>
 				<div class="form-container">
-					<div id="account-id" class="col-md-2 alert alert-success hidden" style="float:none;display:inline-block;padding:2px;">
+					<div id="account-id" class="col-md-2 alert alert-success {{ !isset($request->account->id) ? 'hidden' : '' }}" style="float:none;display:inline-block;padding:2px;">
 						<p><i class="fa fa-check"></i><strong>Success: </strong>Account Selected</p>
 					</div>
 					<div class="form-group {{ $errors->has('username') ? 'has-error' : '' }}">
@@ -128,6 +115,11 @@
 			<div class="hidden">
 				<input type="hidden" value="{{$type}}" name="type" id="type"/>
 			</div>
+			@if(isset($license))
+				<div class="hidden">
+					<input type="hidden" value="{{$license->id}}" name="lcnsId" id="lcnsId"/>
+				</div>
+			@endif
 			<div class="hidden">
 				<input type="hidden" value="{{(isset($userStatus) ? $userStatus : Input::old('userStatus'))}}" name="userStatus" id="userStatus"/>
 			</div>

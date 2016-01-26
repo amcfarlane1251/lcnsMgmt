@@ -8,7 +8,7 @@
 @section('content')
 <div class="row">
 	<div class="page-header col-md-12">
-		<h1>Approve Request</h1>
+		<h1>Approve Move Request</h1>
 	</div>
 </div>
 
@@ -34,16 +34,33 @@
 		<div>
 			<label>@lang('request.requester'):</label> {{$request->owner->first_name." ".$request->owner->last_name}} 
 		</div>
-
 		@if($request->pc_name)
-			<label>@lang('request.pcName'):</label> {{$request->pc_name}}
+			<div class="row transition-block">
+				<div class="col-sm-5">
+					<label>@lang('request.pcName.original'):</label> {{$license->asset->asset_tag}}
+				</div>
+				<div class="col-sm-2">
+					<i class="fa fa-long-arrow-right" style="font-size:2.25rem;"></i>
+				</div>
+				<div class="col-sm-5">
+					<label>@lang('request.pcName.requested'):</label> {{$request->pc_name}}
+				</div>
+			</div>
 		@endif
+
 		<h2>@lang('request.accountInfo')</h2>
-		<div>
-			<label>@lang('account.username'):</label> {{($request->account ? $request->account->username : '')}}
-		</div>
-		<div>
-			<label>@lang('account.name'):</label> {{$request->account ? $request->account->first_name." ".$request->account->last_name : ''}}
+		<div class="row transition-block">
+			<div class="col-sm-5">
+				<label>@lang('account.username.original'):</label> <p>{{($license->account ? $license->account->username : '')}}</p>
+				<label>@lang('account.name.original'):</label> <p>{{$license->account ? $license->account->first_name." ".$license->account->last_name : ''}}</p>
+			</div>
+			<div class="col-sm-2">
+				<i class="fa fa-long-arrow-right" style="font-size:2.25rem;"></i>
+			</div>
+			<div class="col-sm-5">
+				<label>@lang('account.username.requested'):</label> <p>{{($request->account ? $request->account->username : '')}}</p>
+				<label>@lang('account.name.requested'):</label> <p>{{$request->account ? $request->account->first_name." ".$request->account->last_name : ''}}</p>
+			</div>
 		</div>
 	</div>
 

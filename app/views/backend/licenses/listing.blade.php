@@ -20,19 +20,19 @@
 			</tr>
 		</thead>
 
-		<tbody>
+		<tbody data-base-url="{{URL::to('/')}}" data-license-url="{{URL::to('/licenses?roleId='.$roleId)}}">
 			@foreach($licenses as $obj)
 			<tr>
 				<td>{{$obj->name}}</td>
-				<td>{{( $obj->request ? "<span class='alert alert-warning' style='padding:2px;'>".Lang::get('admin/licenses/general.in_request')."</span>" : $obj->assignedAsset )}}</td>
-				<td>{{( $obj->request ? "<span class='alert alert-warning' style='padding:2px;'>".Lang::get('admin/licenses/general.in_request')."</span>" : $obj->assignedUser )}}</td>
+				<td>{{( !empty($obj->request) ? "<a href='".URL::to('request/'.$obj->request->id)."'>".Lang::get('admin/licenses/general.in_request')."</span></a>" : $obj->assignedAsset )}}</td>
+				<td>{{( !empty($obj->request) ? "<a href='".URL::to('request/'.$obj->request->id)."'>".Lang::get('admin/licenses/general.in_request')."</span>" : $obj->assignedUser )}}</td>
 				<td>{{$obj->updatedAt}}</td>
 				@if($obj->request)
-					<td><a href="{{URL::to('licenses/'.$obj->id)}}" class="cancel-request btn btn-primary btn-xs">Cancel Request?</a></td>
+					<td><a href="{{URL::to('request/'.$obj->request->id)}}" class="delete-request btn btn-primary btn-xs">Cancel Request?</a></td>
 				@elseif($obj->assignedUser || $obj->assignedAsset)
 					<td>
 						<a href="{{URL::to('licenses/'.$obj->id)}}" class='checkin-license btn btn-primary btn-xs'>Check In</a>
-						<a href="{{URL::to('licenses/'.$obj->id)}}" class='move-license btn btn-primary btn-xs'>Move</a>
+						<a href="{{URL::to('request/create?type=move&lcnsId='.$obj->id).'&accntId='.$obj->assignedUserId}}" class='move-license btn btn-primary btn-xs'>Move</a>
 					</td>
 				@else
 					<td></td>

@@ -3,6 +3,7 @@ class Requests extends Elegant
 {
 
 	protected $table = 'requests';
+	public $errors;
 
 	public static function withParams(array $params)
 	{
@@ -55,7 +56,11 @@ class Requests extends Elegant
 	public static function count($type, $roleId)
 	{
 		( $roleId!=1 ? $reqCode='' : $reqCode=1 );
-		return DB::table('requests')->where('request_code', '=', $reqCode)->where('type', $type)->count();
+		$query = DB::table('requests')->where('request_code', '=', $reqCode)->where('type', $type);
+		if($roleId!=1) {
+			$query->where('role_id', $roleId);
+		}
+		return $query->count();
 	}
 
 	public static function openReqCount()
@@ -82,63 +87,100 @@ class Requests extends Elegant
 		$validator = Validator::make(array("pcName"=>$this->pc_name), 
 					  array('pcName' => 'required'));
 		if($validator->fails()) {
-			return $validator->messages();
+			$this->errors = $validator->messages();
+			return false;
 		}
+		return true;
 	}
-
-	public static function retrieve($roleId = null, $reqCode, $type)
-	{	
-		if($roleId){
-			return Requests::where('request_code',$reqCode)->where('role_id', $roleId)->where('type', $type)->orderBy('created_at','desc')->get();
+	
+	/*
+	 * Validate an existing asset
+	 */
+	public function validateAsset($account)
+	{
+		//check if asset belongs to the account it has been requested for
+		if($this->pc_name) {
+			//if a move request, allow moving to the same resource for a different account
+			if($this->type=='move' && ( LicenseSeat::find($this->license_id)->asset->asset_tag == $this->pc_name)){
+				return true;
+			}
+			
+			//if existing asset perform validation. If it's new, return true
+			$asset = Asset::findByName($this->pc_name);
+			
+			if($asset && $asset->assignedTo){
+				if($asset->assignedTo->first_name.$asset->assignedTo->last_name != $account->first_name.$account->last_name) {
+					// New MessageBag
+					$errorMessages = new Illuminate\Support\MessageBag;
+					$errorMessages->add('pcName', 'Computer Name already belongs to a different user');
+					$this->errors = $errorMessages;
+					return false;
+				}
+				return true;
+			}
+			else{
+				return true;
+			}
 		}
 		else{
-			return Requests::where('request_code',$reqCode)->where('type', $type)->orderBy('created_at','desc')->get();
+			return true;
 		}
 	}
 
-	public function store($lcnsTypes, $userStatus, $reqParams, $pcName, $accountParams)
+	public static function retrieve($roleId = null, $unitId = null, $type)
 	{	
-            foreach($lcnsTypes as $typeId) {
-                if(LicenseType::find($typeId)->name =='SABA Publisher'){
-                    $this->pc_name = $pcName;
-                    $return = $this->validation();
-                    if($return) {
-                        return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
-                    }	
-                }
-            }
+		$query = Requests::where('type', $type);
+		
+		if($roleId) {
+			$query->where('role_id', $roleId);
+		}
+		if($unitId) {
+			$query->where('unit_id', $unitId);
+		}
+		
+		return $query->orderBy('created_at','desc')->get();
+	}
+	
 
-            if($userStatus=='existing') {
-                $account = Account::where('username', $accountParams['username'])->first();
-                $this->account_id = $account->id;
-                $this->dbStore($reqParams);
-            }
-            else{
-                $account = Account::withParams($accountParams);
-                if($return = $account->validation()) {
-                        return Redirect::back()->withErrors($return)->with('status',$userStatus)->withInput();
-                }
-                $account->store();
-                $this->account_id = $account->id;
-                $account->created_from = $this->dbStore($reqParams);
-                $account->save();
-            }
+	public function store($lcnsTypes = null, $userStatus = null, $account = null)
+	{	
+		if($lcnsTypes == null && $userStatus == null && $account == null) {
+			$this->dbStore();
+			
+			$success = Lang::get('admin/request/message.success.create');
+			return array('success'=>1,'message'=>$success,'type'=>$this->type);
+		}
+		else{
+			if($userStatus=='existing') {
+				//overide account
+				$account = Account::where('username', $account->username)->first();
+				$this->account_id = $account->id;
+				$this->dbStore();
+			}
+			else{
+				$id = $account->store();
 
-            //license types to be added
-            foreach($lcnsTypes as $lcnsType){
-                if(!in_array($lcnsType, $this->licenseTypes()->lists('id'))) {
-                    $this->licenseTypes()->attach($lcnsType);
-                }
-            }
-            //license types to be removed
-            foreach($this->licenseTypes()->lists('id') as $id){
-                if(!in_array($id, $lcnsTypes)) {
-                    $this->licenseTypes()->detach($id);
-                }
-            }
+				$this->account_id = $id;
+				$account->created_from = $this->dbStore();
+				$account->save();
+			}
 
-            $success = Lang::get('admin/request/message.success.create');
-            return array('success'=>1,'message'=>$success,'type'=>$this->type);
+			//license types to be added
+			foreach($lcnsTypes as $lcnsType){
+				if(!in_array($lcnsType, $this->licenseTypes()->lists('id'))) {
+					$this->licenseTypes()->attach($lcnsType);
+				}
+			}
+			//license types to be removed
+			foreach($this->licenseTypes()->lists('id') as $id){
+				if(!in_array($id, $lcnsTypes)) {
+					$this->licenseTypes()->detach($id);
+				}
+			}
+
+			$success = Lang::get('admin/request/message.success.create');
+			return array('success'=>1,'message'=>$success,'type'=>$this->type);
+		}
 	}
 	
 	public function dbStore()
@@ -196,34 +238,51 @@ class Requests extends Elegant
 				}
 
 				foreach($toAdd as $key=>$lcnsSeat){
-					if($key == 'SABA Publisher') {
-						//create computer name as an asset if it doesnt exist
-						if($obj = DB::table('assets')->where('serial', $this->pc_name)->first(array('id'))){
-							$asset = Asset::find($obj->id);
-						}
-						else{
-							$asset = new Asset();
-							$asset->name = "DWAN PC";
-							$asset->serial = $this->pc_name;
-							$asset->asset_tag = $this->pc_name;
-							$asset->model_id = 7; //TODO: Remove this hard coding for model id
-							$asset->status_id = 1;
-							$asset->assigned_to = $this->account->id;
-						}
-						$asset->role_id = $this->role_id;
-						$asset->save();
-						License::checkOutToAsset($lcnsSeat->id, $asset->id);
-					}
-					
-					//checkout to account the request has been made for
-					License::checkOutToAccount($lcnsSeat->id, $this->account_id);					
+					$seat = LicenseSeat::find($lcnsSeat->id);
+					//create/retreive asset and check it out to the account the request is for
+					$assetId = $this->asset($seat);
+					//checkout license seat to the asset account the request has been made for
+					$seat->checkOut($this, $assetId);
 				}
 			}
-			elseif($this->type=='checkin')
-			{
-				//clear license fields
+			elseif($this->type=='checkin') {
+				//asset checkin
+				if($this->license_id == null) {
+					$asset = Asset::find($this->asset_id);
+					
+					//check-in the license seats
+					$licenseSeats =  $asset->licenseseats;
+					foreach($licenseSeats as $seat) {
+						$seat->checkIn();
+					}
+					
+					//check-in the asset
+					$asset->checkIn();
+					
+				}
+				//license checkin
+				else{
+					$seat = LicenseSeat::find($this->license_id);
+					$seat->checkIn();
+					if($this->pc_name) {
+						$asset = Asset::findByName($this->pc_name);
+						if($asset->licenseCount() <= 0) {
+							$asset->checkIn();	
+						}
+					}
+				}
+			}
+			elseif($this->type=='move') {
 				$seat = LicenseSeat::find($this->license_id);
-				$seat->checkIn();
+				$oldAsset = Asset::find($seat->asset_id);
+				$assetId = $this->asset($seat);
+
+				$seat->checkOut($this, $assetId);
+				
+				//clear old asset's assigned user if no licenses are attached to it
+				if($oldAsset->licenseCount() <= 0) {
+					$oldAsset->checkIn();
+				}
 			}
 
 			//detach requested licenses
@@ -236,6 +295,36 @@ class Requests extends Elegant
 		}
 	}
 
+	private function asset($seat)
+	{
+		$type = $seat->getLicenseType();
+
+		if($type->asset_flag) {
+			//create computer name as an asset if it doesnt exist
+			if($obj = DB::table('assets')->where('serial', $this->pc_name)->first(array('id'))){
+				$asset = Asset::find($obj->id);
+				//TODO: most likely put a check in here to see if asset is already assigned to a user and return error
+			}
+			else{
+				$asset = new Asset();
+				$asset->name = "DWAN PC";
+				$asset->serial = strtoupper($this->pc_name);
+				$asset->asset_tag = strtoupper($this->pc_name);
+				$asset->model_id = 7; //TODO: Remove this hard coding for model id
+				$asset->status_id = 1;
+			}
+			$asset->assigned_to = $this->account->id;
+			$asset->role_id = $this->role_id;
+			$asset->unit_id = $this->unit_id;
+			$asset->save();
+			
+			return $asset->id;
+		}
+		else{
+			return null;
+		}
+	}
+	
 	public function deletePrep($id = null)
 	{
 		if($id){

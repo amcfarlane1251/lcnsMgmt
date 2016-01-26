@@ -10,8 +10,9 @@
 
 td.actions{
 	a ~ a{
-		margin:0 .667rem;
+		margin:0 0 0 .667rem;
 	}
+    
 }
 
 form{
@@ -29,4 +30,35 @@ form{
 
 .item-details{
     margin:1rem 0;
+}
+
+.top-bar{
+    margin:1.5rem 0;
+    .form-group{
+        margin-top:1rem;
+        margin-bottom:0;
+    }
+}
+
+/*
+ ** Approve Move Request Page
+ **
+ */
+.transition-block{
+    display:table;
+    width:100%;
+    margin-bottom:2.25rem;
+    div {
+        float:none;
+        display:table-cell;
+        vertical-align:middle;
+        label{
+            display:block;
+            margin-bottom:0;
+        }
+        p{
+            margin:0;
+        }
+    }
+        
 }

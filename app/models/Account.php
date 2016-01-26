@@ -3,6 +3,7 @@ class Account extends Elegant
 {
 
 	protected $table = 'accounts';
+	public $errors;
 	public $timestamps = false;
 	
 	public static function withParams(array $params)
@@ -45,24 +46,20 @@ class Account extends Elegant
 		$validator = Validator::make(array("username"=>$this->username, "firstName"=>$this->first_name, "lastName"=>$this->last_name), 
 					  array('username' => array('unique:accounts,username'), 'firstName'=>'required', 'lastName'=>'required'));
 		if($validator->fails()) {
-			return $validator->messages();
+			$this->errors = $validator->messages();
+			return false;
 		}
+		return true;
 	}
 
 	public function store()
 	{
-		$return = $this->validation();
-		if($return) {
-			return $return;
-		}
-		
 		try{
 			$this->save();
 		}
 		catch(Exception $e){
     		echo 'Caught exception: ',  $e->getMessage(), "\n";
     	}
-		$success = Lang::get('admin/request/message.success.create');
-    	return array('success'=>1,'message'=>$success);
+		return $this->id;
 	}
 }

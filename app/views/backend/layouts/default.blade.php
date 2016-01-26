@@ -52,6 +52,7 @@
         <script src="{{ asset('assets/js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('assets/js/dataTables.colVis.js') }}"></script>
         <script src="{{ asset('assets/js/dataTables.tableTools.js') }}"></script>
+		<script src="{{ asset('assets/js/jquery.confirm.min.js') }}"></script>
         <script src="{{ asset('assets/js/Requests.js') }}"></script>
         <script src="{{ asset('assets/js/ToggleHelper.js') }}"></script>
 
@@ -144,6 +145,11 @@
                             <a href="{{ route('create/user') }}">
                             <i class="fa fa-user"></i>
                             @lang('general.user')</a>
+                        </li>
+						<li {{{ (Request::is('license_types/create') ? 'class="active"' : '') }}}>
+                            <a href="{{ URL::to('license_types/create') }}">
+                            <i class="fa fa-certificate"></i>
+							License Type</a>
                         </li>
                     </ul>
                 </li>
@@ -400,7 +406,6 @@
     <script src="{{ asset('assets/js/bootstrap.datepicker.js') }}"></script>
     <script src="{{ asset('assets/js/theme.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.maskedinput.min.js') }}"></script>
-    <script src="{{ asset('assets/js/jquery.confirm.min.js') }}"></script>
     <script src="{{ asset('assets/js/snipeit.js') }}"></script>
     <script src="{{ asset('assets/js/script.js') }}"></script>
 	<script>
